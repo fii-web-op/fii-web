@@ -25,10 +25,154 @@
 
   // ----- Tab switching ----------------------------------------------
   const pageMeta = {
+    pages:        { title: 'Страницы сайта', subtitle: 'Управление видимостью плашек на каждой странице' },
     news:         { title: 'Новости',       subtitle: 'Управление публикациями факультета' },
     photos:       { title: 'Фотографии',    subtitle: 'Галерея факультета' },
     achievements: { title: 'Достижения',    subtitle: 'Карточки побед и наград' },
     settings:     { title: 'Настройки сайта', subtitle: 'Тексты, контакты и блоки' },
+  };
+
+  // ----- PAGE / TILE REGISTRY ---------------------------------------
+  // Определяет структуру «страница → список плашек», которая отображается
+  // в разделе «Страницы сайта» и используется публичной частью сайта для
+  // скрытия/показа элементов по data-tile.
+  const PAGE_REGISTRY = [
+    {
+      key: 'index',
+      title: 'Главная',
+      file: 'index.html',
+      tiles: [
+        { id: 'hero',            name: 'Hero-блок (заголовок + CTA)' },
+        { id: 'about-section',   name: 'Секция «О факультете» (целиком)' },
+        { id: 'about-card-1',    name: 'Карточка · 10+ лабораторий' },
+        { id: 'about-card-2',    name: 'Карточка · Стажировки с 1 курса' },
+        { id: 'about-card-3',    name: 'Карточка · 95% трудоустройства' },
+        { id: 'about-card-4',    name: 'Карточка · 50+ проектов' },
+        { id: 'programs-section',name: 'Секция «Программы обучения» (целиком)' },
+        { id: 'program-1',       name: 'Программа · ИИ и машинное обучение' },
+        { id: 'program-2',       name: 'Программа · Робототехника' },
+        { id: 'program-3',       name: 'Программа · Генеративный ИИ (магистратура)' },
+        { id: 'reviews-section', name: 'Секция «Отзывы студентов» (целиком)' },
+        { id: 'review-1',        name: 'Отзыв · Анна Климова' },
+        { id: 'review-2',        name: 'Отзыв · Дмитрий Морозов' },
+        { id: 'review-3',        name: 'Отзыв · Елена Сидорова' },
+        { id: 'apply-section',   name: 'CTA «Готов сделать первый шаг?»' },
+      ],
+    },
+    {
+      key: 'about',
+      title: 'О факультете',
+      file: 'about.html',
+      tiles: [
+        { id: 'about-hero',            name: 'Hero-блок' },
+        { id: 'infrastructure-section',name: 'Секция «Инфраструктура и технологии»' },
+        { id: 'infra-card-1',          name: 'Карточка · Современное оборудование' },
+        { id: 'infra-card-2',          name: 'Карточка · Лаборатория ИИ' },
+        { id: 'infra-card-3',          name: 'Карточка · Суперкомпьютер РУДН' },
+        { id: 'partners-section',      name: 'Секция «Партнёры и практика»' },
+        { id: 'partner-sber',          name: 'Партнёр · Сбер' },
+        { id: 'partner-alfa',          name: 'Партнёр · Альфа-Банк' },
+        { id: 'career-cta',            name: 'CTA «Карьера ещё до диплома»' },
+      ],
+    },
+    {
+      key: 'achievements',
+      title: 'Достижения',
+      file: 'achievements.html',
+      tiles: [
+        { id: 'stub-content', name: 'Основной контент страницы' },
+      ],
+    },
+    {
+      key: 'news',
+      title: 'Новости',
+      file: 'news.html',
+      tiles: [
+        { id: 'stub-content', name: 'Основной контент страницы' },
+      ],
+    },
+    {
+      key: 'reviews',
+      title: 'Отзывы',
+      file: 'reviews.html',
+      tiles: [
+        { id: 'stub-content', name: 'Основной контент страницы' },
+      ],
+    },
+    {
+      key: 'admission',
+      title: 'Поступление',
+      file: 'admission.html',
+      tiles: [
+        { id: 'stub-content', name: 'Основной контент страницы' },
+      ],
+    },
+  ];
+
+  const VISIBILITY_KEY = 'fii_tile_visibility';
+
+  // visibility state: { [pageKey]: { [tileId]: boolean } }; true/undefined = видимо, false = скрыто
+  const loadVisibility = () => {
+    try { return JSON.parse(localStorage.getItem(VISIBILITY_KEY)) || {}; }
+    catch { return {}; }
+  };
+  const saveVisibility = (state) => {
+    localStorage.setItem(VISIBILITY_KEY, JSON.stringify(state));
+  };
+  const isTileVisible = (state, pageKey, tileId) => {
+    const page = state[pageKey];
+    if (!page) return true;
+    return page[tileId] !== false;
+  };
+  const setTileVisibility = (pageKey, tileId, visible) => {
+    const state = loadVisibility();
+    if (!state[pageKey]) state[pageKey] = {};
+    state[pageKey][tileId] = visible;
+    saveVisibility(state);
+  };
+
+  // ----- Render pages tree ------------------------------------------
+  const renderPagesTree = () => {
+    const tree = $('#pagesTree');
+    if (!tree) return;
+    const state = loadVisibility();
+    tree.innerHTML = PAGE_REGISTRY.map(page => {
+      const hiddenCount = page.tiles.filter(t => !isTileVisible(state, page.key, t.id)).length;
+      const counterText = hiddenCount > 0
+        ? `${page.tiles.length - hiddenCount} / ${page.tiles.length} активно`
+        : `${page.tiles.length} плашек`;
+      const rows = page.tiles.map(tile => {
+        const visible = isTileVisible(state, page.key, tile.id);
+        return `
+          <li class="tile-row">
+            <div class="tile-row__label">
+              <span class="tile-row__name">${escapeHtml(tile.name)}</span>
+              <span class="tile-row__id">data-tile="${escapeHtml(tile.id)}"</span>
+            </div>
+            <label class="switch" title="${visible ? 'Скрыть' : 'Показать'}">
+              <input type="checkbox" data-page="${page.key}" data-tile="${tile.id}" ${visible ? 'checked' : ''}>
+              <span class="switch__slider"></span>
+            </label>
+          </li>`;
+      }).join('');
+      return `
+        <div class="page-item" data-page-key="${page.key}">
+          <button class="page-item__head" type="button" aria-expanded="false">
+            <svg class="page-item__chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+            <span class="page-item__icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+            </span>
+            <span class="page-item__info">
+              <span class="page-item__title">${escapeHtml(page.title)}</span>
+              <span class="page-item__meta">${escapeHtml(page.file)}</span>
+            </span>
+            <span class="page-item__counter">${counterText}</span>
+          </button>
+          <div class="page-item__body">
+            <ul class="tile-list">${rows}</ul>
+          </div>
+        </div>`;
+    }).join('');
   };
 
   const switchSection = (key) => {
@@ -49,6 +193,59 @@
   $$('.admin-nav__link').forEach(btn =>
     btn.addEventListener('click', () => switchSection(btn.dataset.section))
   );
+
+  // ----- Pages tree: render + interactions --------------------------
+  renderPagesTree();
+
+  const pagesTree = $('#pagesTree');
+  if (pagesTree) {
+    // Аккордеон: разворачивание/сворачивание страницы
+    pagesTree.addEventListener('click', (e) => {
+      const head = e.target.closest('.page-item__head');
+      if (!head) return;
+      // Не разворачивать, если кликнули по переключателю
+      if (e.target.closest('.switch')) return;
+      const item = head.closest('.page-item');
+      const wasOpen = item.classList.toggle('is-open');
+      head.setAttribute('aria-expanded', wasOpen ? 'true' : 'false');
+    });
+
+    // Переключение видимости плашки
+    pagesTree.addEventListener('change', (e) => {
+      const input = e.target.closest('input[type="checkbox"][data-tile]');
+      if (!input) return;
+      const pageKey = input.dataset.page;
+      const tileId  = input.dataset.tile;
+      const visible = input.checked;
+      setTileVisibility(pageKey, tileId, visible);
+
+      // Обновляем счётчик на шапке страницы
+      const pageEl = input.closest('.page-item');
+      const state  = loadVisibility();
+      const pageDef = PAGE_REGISTRY.find(p => p.key === pageKey);
+      if (pageEl && pageDef) {
+        const hiddenCount = pageDef.tiles.filter(t => !isTileVisible(state, pageKey, t.id)).length;
+        const counter = pageEl.querySelector('.page-item__counter');
+        if (counter) {
+          counter.textContent = hiddenCount > 0
+            ? `${pageDef.tiles.length - hiddenCount} / ${pageDef.tiles.length} активно`
+            : `${pageDef.tiles.length} плашек`;
+        }
+      }
+      showToast(visible ? 'Плашка показана ✓' : 'Плашка скрыта');
+    });
+  }
+
+  // Сброс всех настроек видимости
+  const resetBtn = $('#pagesReset');
+  if (resetBtn) {
+    resetBtn.addEventListener('click', () => {
+      if (!confirm('Показать все плашки на всех страницах?')) return;
+      localStorage.removeItem(VISIBILITY_KEY);
+      renderPagesTree();
+      showToast('Видимость плашек сброшена');
+    });
+  }
 
   // ----- Modal ------------------------------------------------------
   const newsModal = $('#newsModal');

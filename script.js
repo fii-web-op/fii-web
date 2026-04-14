@@ -113,12 +113,13 @@ document.querySelectorAll('.cards, .cards--programs, .reviews__grid').forEach((g
 
 // ===== ADMIN PANEL FAB =====
 // Внедряем плавающую кнопку «Панель администратора» на всех страницах сайта.
+// В свёрнутом состоянии — небольшая шестерёнка, при наведении курсора — разворачивается.
 (function injectAdminFab() {
   if (document.querySelector('.admin-fab')) return;
 
   const fab = document.createElement('a');
   fab.href = 'admin.html';
-  fab.className = 'admin-fab';
+  fab.className = 'admin-fab admin-fab--collapsed';
   fab.setAttribute('aria-label', 'Открыть панель администратора');
   fab.title = 'Панель администратора';
   fab.innerHTML = `
@@ -128,7 +129,27 @@ document.querySelectorAll('.cards, .cards--programs, .reviews__grid').forEach((g
         <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09a1.65 1.65 0 0 0-1-1.51 1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.6 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1Z"/>
       </svg>
     </span>
-    <span>Панель администратора</span>
+    <span class="admin-fab__label">Панель администратора</span>
   `;
   document.body.appendChild(fab);
+})();
+
+// ===== TILE VISIBILITY LOADER =====
+// Читает из localStorage настройки, сделанные в CMS (раздел «Страницы сайта»),
+// и скрывает плашки с data-tile, которые админ отключил на текущей странице.
+(function applyTileVisibility() {
+  const pageKey = document.body && document.body.dataset ? document.body.dataset.page : null;
+  if (!pageKey) return;
+  let state;
+  try { state = JSON.parse(localStorage.getItem('fii_tile_visibility')) || {}; }
+  catch { state = {}; }
+  const pageState = state[pageKey];
+  if (!pageState) return;
+  document.querySelectorAll('[data-tile]').forEach((el) => {
+    const tileId = el.dataset.tile;
+    if (pageState[tileId] === false) {
+      el.setAttribute('hidden', '');
+      el.style.display = 'none';
+    }
+  });
 })();
