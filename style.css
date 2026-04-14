@@ -1204,7 +1204,7 @@ button {
   }
 }
 
-/* ===== ADMIN FAB (floating "Панель администратора" button) ===== */
+/* ===== ADMIN FAB (floating gear that expands on hover) ===== */
 .admin-fab {
   position: fixed;
   bottom: 24px;
@@ -1213,7 +1213,8 @@ button {
   display: inline-flex;
   align-items: center;
   gap: 10px;
-  padding: 12px 20px 12px 16px;
+  height: 44px;
+  padding: 0 12px 0 12px;
   border-radius: 999px;
   background: #1A1A1A;
   color: #fff;
@@ -1224,49 +1225,83 @@ button {
   border: 1px solid rgba(255, 255, 255, 0.08);
   box-shadow: 0 10px 24px -8px rgba(10, 22, 40, 0.35),
               0 4px 10px rgba(10, 22, 40, 0.15);
-  transition: transform 0.2s ease, box-shadow 0.25s ease, background 0.25s ease;
+  overflow: hidden;
+  max-width: 44px; /* свёрнутое состояние — только иконка */
+  transition: max-width 0.35s cubic-bezier(.22,.61,.36,1),
+              padding 0.35s ease,
+              background 0.25s ease,
+              box-shadow 0.25s ease,
+              transform 0.2s ease;
 }
 
-.admin-fab:hover {
+/* Раскрытие по наведению курсора или по клавиатурному фокусу */
+.admin-fab:hover,
+.admin-fab:focus-visible {
+  max-width: 280px;
+  padding: 0 20px 0 12px;
   background: #D32F2F;
   transform: translateY(-2px);
   box-shadow: 0 18px 32px -10px rgba(211, 47, 47, 0.55),
               0 6px 14px rgba(211, 47, 47, 0.25);
 }
 
-.admin-fab:active {
-  transform: translateY(0);
-}
+.admin-fab:active { transform: translateY(0); }
 
 .admin-fab__icon {
-  width: 22px;
-  height: 22px;
+  width: 24px;
+  height: 24px;
   border-radius: 50%;
   background: #D32F2F;
   display: grid;
   place-items: center;
   color: #fff;
   flex-shrink: 0;
-  transition: background 0.25s ease;
+  transition: background 0.25s ease, transform 0.45s ease;
 }
 
-.admin-fab:hover .admin-fab__icon {
+.admin-fab:hover .admin-fab__icon,
+.admin-fab:focus-visible .admin-fab__icon {
   background: #fff;
   color: #D32F2F;
+  transform: rotate(90deg); /* лёгкое «проворачивание» шестерёнки */
 }
 
 .admin-fab__icon svg {
-  width: 13px;
-  height: 13px;
+  width: 14px;
+  height: 14px;
   stroke: currentColor;
+}
+
+.admin-fab__label {
+  white-space: nowrap;
+  opacity: 0;
+  transform: translateX(-6px);
+  transition: opacity 0.25s ease 0.05s, transform 0.3s ease;
+}
+
+.admin-fab:hover .admin-fab__label,
+.admin-fab:focus-visible .admin-fab__label {
+  opacity: 1;
+  transform: translateX(0);
 }
 
 @media (max-width: 640px) {
   .admin-fab {
     bottom: 16px;
     left: 16px;
-    padding: 10px 16px 10px 12px;
-    font-size: 13px;
+    height: 40px;
+    max-width: 40px;
   }
-  .admin-fab__icon { width: 20px; height: 20px; }
+  .admin-fab:hover,
+  .admin-fab:focus-visible { max-width: 260px; }
+  .admin-fab__icon { width: 22px; height: 22px; }
+}
+
+/* На сенсорных устройствах (нет :hover) — всегда раскрыта, чтобы кнопка была доступна */
+@media (hover: none) {
+  .admin-fab {
+    max-width: 280px;
+    padding: 0 20px 0 12px;
+  }
+  .admin-fab__label { opacity: 1; transform: none; }
 }

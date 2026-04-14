@@ -9,7 +9,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="style.css">
 </head>
-<body>
+<body data-page="index">
 
   <!-- ===== HEADER ===== -->
   <header class="header" id="header">
@@ -80,7 +80,7 @@
   </nav>
 
   <!-- ===== HERO ===== -->
-  <section class="hero" id="hero">
+  <section class="hero" id="hero" data-tile="hero">
     <div class="container hero__inner">
       <h1 class="hero__title">Твоё будущее<br>начинается здесь</h1>
       <p class="hero__subtitle">
@@ -103,29 +103,29 @@
   </section>
 
   <!-- ===== ABOUT / ACHIEVEMENTS ===== -->
-  <section class="section achievements" id="about">
+  <section class="section achievements" id="about" data-tile="about-section">
     <div class="container">
       <h2 class="section__title" id="achievements">О факультете</h2>
       <p class="section__subtitle">Цифры, которые говорят сами за себя</p>
 
       <!-- Данные для карточек позже будут подтягиваться динамически через API -->
       <div class="cards">
-        <div class="card">
+        <div class="card" data-tile="about-card-1">
           <div class="card__icon">🔬</div>
           <div class="card__number">10+</div>
           <div class="card__text">Лабораторий с оборудованием мирового уровня</div>
         </div>
-        <div class="card">
+        <div class="card" data-tile="about-card-2">
           <div class="card__icon">🚀</div>
           <div class="card__number">1 курс</div>
           <div class="card__text">Стажировки в IT-компаниях уже с первого курса</div>
         </div>
-        <div class="card">
+        <div class="card" data-tile="about-card-3">
           <div class="card__icon">🏆</div>
           <div class="card__number">95%</div>
           <div class="card__text">Выпускников трудоустраиваются в первый год</div>
         </div>
-        <div class="card">
+        <div class="card" data-tile="about-card-4">
           <div class="card__icon">🤖</div>
           <div class="card__number">50+</div>
           <div class="card__text">Проектов с реальными заказчиками ежегодно</div>
@@ -135,25 +135,25 @@
   </section>
 
   <!-- ===== PROGRAMS ===== -->
-  <section class="section programs" id="programs">
+  <section class="section programs" id="programs" data-tile="programs-section">
     <div class="container">
       <h2 class="section__title">Программы обучения</h2>
       <p class="section__subtitle">Выбери свой путь в мире ИИ</p>
 
       <div class="cards cards--programs">
-        <div class="card card--program">
+        <div class="card card--program" data-tile="program-1">
           <div class="card__badge">Бакалавриат</div>
           <h3 class="card__heading">Искусственный интеллект и машинное обучение</h3>
           <p class="card__desc">4 года обучения. Python, нейросети, компьютерное зрение, NLP и работа с большими данными.</p>
           <a href="#apply" class="btn btn--primary btn--sm">Подробнее</a>
         </div>
-        <div class="card card--program">
+        <div class="card card--program" data-tile="program-2">
           <div class="card__badge">Бакалавриат</div>
           <h3 class="card__heading">Робототехника и интеллектуальные системы</h3>
           <p class="card__desc">4 года обучения. Автономные системы, сенсоры, управление роботами и встраиваемый ИИ.</p>
           <a href="#apply" class="btn btn--primary btn--sm">Подробнее</a>
         </div>
-        <div class="card card--program">
+        <div class="card card--program" data-tile="program-3">
           <div class="card__badge">Магистратура</div>
           <h3 class="card__heading">Генеративный ИИ и большие языковые модели</h3>
           <p class="card__desc">2 года обучения. Архитектуры трансформеров, RLHF, деплой моделей и этика ИИ.</p>
@@ -164,13 +164,13 @@
   </section>
 
   <!-- ===== REVIEWS ===== -->
-  <section class="section reviews" id="reviews">
+  <section class="section reviews" id="reviews" data-tile="reviews-section">
     <div class="container">
       <h2 class="section__title">Отзывы студентов</h2>
       <p class="section__subtitle">Те, кто уже выбрал будущее</p>
 
       <div class="reviews__grid">
-        <div class="review">
+        <div class="review" data-tile="review-1">
           <div class="review__header">
             <div class="review__avatar">АК</div>
             <div>
@@ -184,7 +184,7 @@
           </p>
         </div>
 
-        <div class="review">
+        <div class="review" data-tile="review-2">
           <div class="review__header">
             <div class="review__avatar">ДМ</div>
             <div>
@@ -198,7 +198,7 @@
           </p>
         </div>
 
-        <div class="review">
+        <div class="review" data-tile="review-3">
           <div class="review__header">
             <div class="review__avatar">ЕС</div>
             <div>
@@ -216,7 +216,7 @@
   </section>
 
   <!-- ===== APPLY CTA ===== -->
-  <section class="section apply" id="apply">
+  <section class="section apply" id="apply" data-tile="apply-section">
     <div class="container apply__inner">
       <h2 class="section__title section__title--light">Готов сделать первый шаг?</h2>
       <p class="section__subtitle section__subtitle--light">
