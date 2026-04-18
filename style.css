@@ -1470,15 +1470,15 @@ h1 em, h2 em, h3 em {
     padding: 120px 0;
   }
 
-  .cards {
+  .cards:not(.cards--programs) {
     grid-template-columns: repeat(4, 1fr);
     gap: 0;
   }
 
-  .cards > .card {
+  .cards:not(.cards--programs) > .card {
     padding: 32px 28px 40px 0;
   }
-  .cards > .card + .card {
+  .cards:not(.cards--programs) > .card + .card {
     border-left: 1px solid var(--rule);
     padding-left: 28px;
   }
