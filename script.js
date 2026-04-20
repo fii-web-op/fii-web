@@ -1,3 +1,27 @@
+// ===== HERO COUNTDOWN =====
+function calculateDaysLeft() {
+  const deadline = new Date(2026, 6, 20); // 20 июля 2026 (месяцы с 0)
+  const now = new Date();
+  const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  const msPerDay = 1000 * 60 * 60 * 24;
+  return Math.max(0, Math.round((deadline - today) / msPerDay));
+}
+
+function pluralizeDays(n) {
+  const mod10 = n % 10;
+  const mod100 = n % 100;
+  if (mod10 === 1 && mod100 !== 11) return 'день';
+  if (mod10 >= 2 && mod10 <= 4 && (mod100 < 12 || mod100 > 14)) return 'дня';
+  return 'дней';
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+  const countdownEl = document.getElementById('heroCountdown');
+  if (!countdownEl) return;
+  const days = calculateDaysLeft();
+  countdownEl.textContent = `${days} ${pluralizeDays(days)}`;
+});
+
 // ===== CHAT WIDGET =====
 const chatWidget = document.getElementById('chatWidget');
 const chatToggle = document.getElementById('chatToggle');

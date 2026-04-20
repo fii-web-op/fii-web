@@ -1542,6 +1542,38 @@ h1 em, h2 em, h3 em {
   border-radius: var(--radius-sm);
 }
 
+/* ===== DARK THEME (system preference) ===== */
+@media (prefers-color-scheme: dark) {
+  :root {
+    --paper:          #0E0E0E;
+    --surface:        #161616;
+    --surface-soft:   #1A1A1A;
+    --ink:            #F0EFE9;
+    --ink-soft:       #E0DED8;
+    --muted:          #A09E97;
+    --muted-2:        #6B6965;
+    --rule:           #2A2A2A;
+    --divider:        #222220;
+    --ink-dark:       #F0EFE9;
+    --ink-dark-soft:  #E0DED8;
+  }
+
+  .header {
+    background: rgba(14, 14, 14, 0.85);
+  }
+
+  .btn--primary {
+    background: var(--paper);
+    border-color: var(--paper);
+    color: var(--ink-dark);
+  }
+
+  .btn--outline {
+    border-color: var(--rule);
+    color: var(--ink);
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,
