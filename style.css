@@ -319,37 +319,21 @@ strong { color: var(--ink); font-weight: 600; }
   height: var(--header-h);
 }
 
-/* Логотип: квадратная метка «AI» + серифный текст названия */
+/* Логотип: неоновая метка-эмблема + серифный текст названия */
 .header__logo {
   display: inline-flex;
   align-items: center;
-  gap: 12px;
+  gap: 10px;
   flex-shrink: 0;
   color: var(--ink);
 }
 
-.header__logo-icon {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 34px;
-  height: 34px;
-  background: linear-gradient(135deg, var(--accent) 0%, #0EA5E9 100%);
-  color: var(--ink-dark);
-  font-family: var(--font-serif);
-  font-size: 12px;
-  font-weight: 700;
-  letter-spacing: 0.08em;
-  border-radius: var(--radius-sm);
-  box-shadow: 0 0 20px rgba(20, 224, 177, 0.35);
-}
-
 .header__logo-mark {
-  width: 34px;
-  height: 34px;
+  width: 40px;
+  height: 40px;
   display: inline-block;
   object-fit: contain;
-  filter: drop-shadow(0 0 8px rgba(20, 224, 177, 0.45));
+  filter: drop-shadow(0 0 9px rgba(20, 224, 177, 0.5));
   flex-shrink: 0;
 }
 
