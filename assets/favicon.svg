@@ -1,0 +1,30 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" fill="none">
+  <defs>
+    <linearGradient id="fav-bg" x1="0" y1="0" x2="64" y2="64" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#0c2420"/>
+      <stop offset="1" stop-color="#071714"/>
+    </linearGradient>
+    <filter id="fav-glow" x="-40%" y="-40%" width="180%" height="180%">
+      <feGaussianBlur stdDeviation="1.1" result="blur"/>
+      <feMerge>
+        <feMergeNode in="blur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+  </defs>
+
+  <!-- Фон: скруглённый квадрат, чтобы иконка не обрезалась во вкладке -->
+  <rect x="2" y="2" width="60" height="60" rx="14" fill="url(#fav-bg)" stroke="#14E0B1" stroke-opacity="0.28" stroke-width="1.5"/>
+
+  <g filter="url(#fav-glow)" stroke="#14E0B1" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" fill="none">
+    <!-- Глобус -->
+    <ellipse cx="32" cy="35" rx="17" ry="12.5"/>
+    <path d="M15 35 H49"/>
+    <path d="M32 22.5 C24.5 28 24.5 42 32 47.5"/>
+    <path d="M32 22.5 C39.5 28 39.5 42 32 47.5"/>
+    <!-- Буква U / колба -->
+    <path d="M23 15 V36 C23 41.5 26.5 47 32 47 C37.5 47 41 41.5 41 36 V15"/>
+    <path d="M19 15 H27"/>
+    <path d="M37 15 H45"/>
+  </g>
+</svg>
