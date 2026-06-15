@@ -20,9 +20,9 @@ from __future__ import annotations
 
 from contextlib import asynccontextmanager
 
-from fastapi import FastAPI
+from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import FileResponse
+from fastapi.responses import FileResponse, HTMLResponse
 from fastapi.staticfiles import StaticFiles
 
 from .config import get_settings
@@ -67,6 +67,67 @@ def shared_tile_registry() -> FileResponse:
         settings.PROJECT_ROOT / "tile-registry.js",
         media_type="application/javascript",
     )
+
+
+# ---------------------------------------------------------------------------
+# Live preview of the public site, served from the *admin* host.
+#
+# The visual editor (admin SPA) loads the real public pages into an <iframe>.
+# Serving them from the same origin as the admin lets the editor read and
+# decorate the page's DOM directly (no cross-origin restrictions), so the
+# admin can click any text on the live site and edit it in place.
+#
+# Only front-end assets are exposed — never backend sources, the database,
+# dotfiles (.env, .git) or anything outside the project root.
+# ---------------------------------------------------------------------------
+_PREVIEW_ALLOWED_SUFFIXES = {
+    ".html", ".htm", ".css", ".js", ".mjs", ".map", ".json",
+    ".svg", ".png", ".jpg", ".jpeg", ".webp", ".gif", ".ico",
+    ".woff", ".woff2", ".ttf", ".otf",
+}
+_PREVIEW_BLOCKED_TOP_DIRS = {"backend", "admin"}
+
+# Injected into preview HTML so the embedded page talks to *this* host's API
+# and so script.js knows it is running inside the editor (edit mode).
+_PREVIEW_INJECT = (
+    "<script>window.FII_API_BASE=window.location.origin;"
+    "window.__FII_PREVIEW__=true;</script>"
+)
+
+
+@app.get("/preview/{path:path}", include_in_schema=False)
+def preview_file(path: str):
+    root = settings.PROJECT_ROOT
+    rel = path or "index.html"
+    if rel.endswith("/"):
+        rel = rel + "index.html"
+
+    target = (root / rel).resolve()
+
+    # Stay strictly inside the project root (defeats ../ traversal).
+    try:
+        parts = target.relative_to(root).parts
+    except ValueError:
+        raise HTTPException(status_code=404)
+
+    if (
+        not parts
+        or any(p.startswith(".") for p in parts)        # hidden files/dirs (.env, .git)
+        or parts[0] in _PREVIEW_BLOCKED_TOP_DIRS         # backend sources, admin SPA
+        or not target.is_file()
+        or target.suffix.lower() not in _PREVIEW_ALLOWED_SUFFIXES
+    ):
+        raise HTTPException(status_code=404)
+
+    if target.suffix.lower() in {".html", ".htm"}:
+        html = target.read_text(encoding="utf-8")
+        if "</head>" in html:
+            html = html.replace("</head>", _PREVIEW_INJECT + "</head>", 1)
+        else:
+            html = _PREVIEW_INJECT + html
+        return HTMLResponse(html)
+
+    return FileResponse(target)
 
 
 # Admin SPA — served from the same host as the API.
