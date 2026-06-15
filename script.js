@@ -164,6 +164,11 @@ document.querySelectorAll('.cards, .cards--programs, .reviews__grid').forEach((g
     return map;
   }
 
+  // True when the page is rendered inside the admin visual editor's iframe.
+  // In that case hidden tiles are kept on screen (just flagged) so the editor
+  // can show them dimmed and let the admin toggle them back on.
+  const editMode = window.__FII_PREVIEW__ === true;
+
   function applyOverrides(payload) {
     const registry = window.PAGE_REGISTRY || [];
     const pageDef = registry.find(p => p.key === pageKey);
@@ -175,9 +180,15 @@ document.querySelectorAll('.cards, .cards--programs, .reviews__grid').forEach((g
     document.querySelectorAll('[data-tile]').forEach((tileEl) => {
       const tileId = tileEl.dataset.tile;
       if (visibility[tileId] === false) {
-        tileEl.setAttribute('hidden', '');
-        tileEl.style.display = 'none';
-        return;
+        if (editMode) {
+          tileEl.setAttribute('data-fii-hidden', '1');
+        } else {
+          tileEl.setAttribute('hidden', '');
+          tileEl.style.display = 'none';
+          return;
+        }
+      } else if (editMode) {
+        tileEl.removeAttribute('data-fii-hidden');
       }
       const overrides = content[tileId];
       if (!overrides || !fieldMap[tileId]) return;
@@ -222,8 +233,14 @@ document.querySelectorAll('.cards, .cards--programs, .reviews__grid').forEach((g
     };
   }
 
+  // Let the visual editor know the page is fully populated and ready to be
+  // decorated with click-to-edit handlers.
+  function signalReady() {
+    try { document.dispatchEvent(new CustomEvent('fii:applied')); } catch (e) { /* noop */ }
+  }
+
   async function load() {
-    if (!pageKey) return;
+    if (!pageKey) { signalReady(); return; }
     if (apiBase) {
       try {
         const res = await fetch(`${apiBase}/api/public/overrides?page_key=${encodeURIComponent(pageKey)}`,
@@ -232,6 +249,7 @@ document.querySelectorAll('.cards, .cards--programs, .reviews__grid').forEach((g
           const data = await res.json();
           applyOverrides(data);
           applyTicker(data.ticker || []);
+          signalReady();
           return;
         }
       } catch (e) {
@@ -241,6 +259,7 @@ document.querySelectorAll('.cards, .cards--programs, .reviews__grid').forEach((g
     const fallback = readLocalFallback();
     applyOverrides(fallback);
     applyTicker(fallback.ticker);
+    signalReady();
   }
 
   if (document.readyState === 'loading') {

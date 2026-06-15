@@ -71,6 +71,7 @@
   const listBlocks   = ()         => request('/api/admin/blocks');
   const saveBlock    = (b)        => request('/api/admin/blocks', { method: 'PUT', body: b });
   const deleteTile   = (p, t)     => request(`/api/admin/blocks?page_key=${encodeURIComponent(p)}&tile_id=${encodeURIComponent(t)}`, { method: 'DELETE' });
+  const deleteField  = (p, t, f)  => request(`/api/admin/blocks?page_key=${encodeURIComponent(p)}&tile_id=${encodeURIComponent(t)}&field_id=${encodeURIComponent(f)}`, { method: 'DELETE' });
   const resetAll     = ()         => request('/api/admin/blocks/all', { method: 'DELETE' });
 
   // Visibility
@@ -99,7 +100,7 @@
   global.FiiAdminApi = {
     getToken, setToken, clearToken,
     login, logout, me,
-    listBlocks, saveBlock, deleteTile, resetAll,
+    listBlocks, saveBlock, deleteTile, deleteField, resetAll,
     listVisibility, setVisibility,
     getTicker, replaceTicker,
     listNews, createNews, deleteNews,
