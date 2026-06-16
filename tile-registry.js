@@ -652,9 +652,28 @@ window.PAGE_REGISTRY = [
   // `_shared` и применяются скриптом сразу на всех страницах сайта.
   {
     key: '_shared',
-    title: 'Подвал сайта (общий)',
+    title: 'Шапка и подвал (общие)',
     file: 'index.html',
     tiles: [
+      {
+        id: 'site-header', name: 'Шапка — логотип, меню, соцсети',
+        fields: [
+          { id: 'logo-text',     label: 'Логотип — название', selector: '.header__logo-text',     type: 'text', default: 'Факультет ИИ' },
+          { id: 'logo-subtitle', label: 'Логотип — подпись',  selector: '.header__logo-subtitle', type: 'text', default: 'РУДН' },
+          { id: 'nav-1', label: 'Меню 1', selector: '.header__nav-list li:nth-of-type(1) .header__nav-link', type: 'text', default: 'О факультете' },
+          { id: 'nav-2', label: 'Меню 2', selector: '.header__nav-list li:nth-of-type(2) .header__nav-link', type: 'text', default: 'Достижения' },
+          { id: 'nav-3', label: 'Меню 3', selector: '.header__nav-list li:nth-of-type(3) .header__nav-link', type: 'text', default: 'Новости' },
+          { id: 'nav-4', label: 'Меню 4', selector: '.header__nav-list li:nth-of-type(4) .header__nav-link', type: 'text', default: 'Отзывы' },
+          { id: 'nav-5', label: 'Меню 5', selector: '.header__nav-list li:nth-of-type(5) .header__nav-link', type: 'text', default: 'Поступление' },
+          { id: 'cta',   label: 'Кнопка «Задать вопрос»', selector: '.header__cta', type: 'text', default: 'Задать вопрос' },
+          { id: 'tg-label', label: 'Telegram — подпись', selector: '.header__socials a:nth-of-type(1)', type: 'text', default: 'TG' },
+          { id: 'tg-url',   label: 'Telegram — ссылка',  selector: '.header__socials a:nth-of-type(1)', type: 'link', default: '' },
+          { id: 'vk-label', label: 'VK — подпись',       selector: '.header__socials a:nth-of-type(2)', type: 'text', default: 'VK' },
+          { id: 'vk-url',   label: 'VK — ссылка',        selector: '.header__socials a:nth-of-type(2)', type: 'link', default: '' },
+          { id: 'yt-label', label: 'YouTube — подпись',  selector: '.header__socials a:nth-of-type(3)', type: 'text', default: 'YT' },
+          { id: 'yt-url',   label: 'YouTube — ссылка',   selector: '.header__socials a:nth-of-type(3)', type: 'link', default: '' },
+        ],
+      },
       {
         id: 'site-footer', name: 'Подвал — контакты и адрес',
         fields: [

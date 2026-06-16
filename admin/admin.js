@@ -96,6 +96,7 @@
     if (!page) return;
     finishActiveEdit(false);
     endImageEdit();
+    endLinkEdit();
     currentPage = page;
     $$('.ed-page').forEach((b) => b.classList.toggle('is-active', b.dataset.page === key));
     $('#previewTitle').textContent = page.title;
@@ -127,8 +128,10 @@
   // =================================================================
   let editing = null;   // { el, original, tile, field, type }
   let imgEditing = null; // { el, tile, field } — active image slot
+  let linkEditing = null; // { el, tile, field } — active link slot
   let fieldBar = null;
   let imageBar = null;
+  let linkBar = null;
   let tileBar = null;
   let tileHideTimer = null;
 
@@ -154,6 +157,12 @@
       display:flex;align-items:center;justify-content:center;opacity:0;
       transition:opacity .12s;pointer-events:none;z-index:5;box-shadow:0 2px 6px rgba(0,0,0,.3);}
     .fii-image-field:hover::after{opacity:1;}
+    .fii-link-field{position:relative;}
+    .fii-link-field::after{content:'🔗';position:absolute;top:-8px;right:-8px;font-size:11px;
+      background:rgba(43,78,234,.92);border-radius:50%;width:20px;height:20px;
+      display:flex;align-items:center;justify-content:center;opacity:0;
+      transition:opacity .12s;pointer-events:none;z-index:5;box-shadow:0 2px 6px rgba(0,0,0,.3);}
+    .fii-link-field:hover::after{opacity:1;}
     .fii-bar{position:absolute;z-index:2147483000;display:none;gap:6px;
       font-family:'Inter',system-ui,sans-serif;font-size:13px;}
     .fii-bar button{display:inline-flex;align-items:center;gap:5px;border:0;cursor:pointer;
@@ -208,6 +217,26 @@
         if (el) startEdit(el);
       });
     }
+    // Link-slot toolbar (set / clear an <a> href)
+    if (!linkBar || linkBar.ownerDocument !== doc) {
+      linkBar = doc.createElement('div');
+      linkBar.className = 'fii-bar';
+      linkBar.innerHTML =
+        '<button type="button" class="fii-save fii-link-edit">🔗 Изменить ссылку</button>' +
+        '<button type="button" class="fii-toggle fii-link-text" style="display:none">✎ Текст</button>' +
+        '<button type="button" class="fii-reset fii-link-reset">↺ Сбросить</button>' +
+        '<button type="button" class="fii-cancel fii-link-close">Закрыть</button>';
+      doc.body.appendChild(linkBar);
+      linkBar.querySelector('.fii-link-edit').addEventListener('click', (e) => { e.preventDefault(); editLink(); });
+      linkBar.querySelector('.fii-link-reset').addEventListener('click', (e) => { e.preventDefault(); resetLink(); });
+      linkBar.querySelector('.fii-link-close').addEventListener('click', (e) => { e.preventDefault(); endLinkEdit(); });
+      linkBar.querySelector('.fii-link-text').addEventListener('click', (e) => {
+        e.preventDefault();
+        const el = linkEditing && linkEditing.el;
+        endLinkEdit();
+        if (el) startEdit(el);
+      });
+    }
     // Tile visibility toolbar
     if (!tileBar || tileBar.ownerDocument !== doc) {
       tileBar = doc.createElement('div');
@@ -256,6 +285,9 @@
         if (field.type === 'image') {
           el.dataset.fiiImageField = field.id;
           el.classList.add('fii-image-field');
+        } else if (field.type === 'link') {
+          el.dataset.fiiLinkField = field.id;
+          el.classList.add('fii-link-field');
         } else {
           el.dataset.fiiTextField = field.id;
           el.dataset.fiiTextType = field.type;
@@ -289,16 +321,25 @@
           startImageEdit(el);
           return;
         }
+        if (el.dataset.fiiLinkField) {
+          if (linkEditing && linkEditing.el === el) return;
+          await finishActiveEdit(true);
+          startLinkEdit(el);
+          return;
+        }
         if (el.dataset.fiiTextField) {
           if (editing && editing.el === el) return;
           await finishActiveEdit(true);
           endImageEdit();
+          endLinkEdit();
           startEdit(el);
         }
       } else if (editing) {
         await finishActiveEdit(true);
       } else if (imgEditing) {
         endImageEdit();
+      } else if (linkEditing) {
+        endLinkEdit();
       }
     });
 
@@ -501,6 +542,87 @@
     imageBar.style.left = Math.max(4, r.left + win.scrollX) + 'px';
   }
 
+  // ---------- link slots (set the URL of a social/menu link) --------
+  function startLinkEdit(el) {
+    linkEditing = { el, tile: el.dataset.fiiTile, field: el.dataset.fiiLinkField };
+    hideTileBar(0);
+    if (linkBar) {
+      const textBtn = linkBar.querySelector('.fii-link-text');
+      if (textBtn) textBtn.style.display = el.dataset.fiiTextField ? 'inline-flex' : 'none';
+    }
+    positionLinkBar();
+  }
+
+  function endLinkEdit() {
+    linkEditing = null;
+    if (linkBar) linkBar.style.display = 'none';
+  }
+
+  async function editLink() {
+    if (!linkEditing) return;
+    const { el, tile, field } = linkEditing;
+    const current = (state.content[currentPage.key]?.[tile]?.[field]) ?? el.getAttribute('href') ?? '';
+    const input = window.prompt('Ссылка (URL), например https://t.me/yourchannel:', current === '#' ? '' : current);
+    if (input === null) return; // cancelled
+    let url = input.trim();
+    // Be forgiving: bare domains get https://
+    if (url && !/^(https?:\/\/|\/|#|mailto:|tel:)/i.test(url)) url = 'https://' + url;
+    try {
+      await api.saveBlock({ page_key: currentPage.key, tile_id: tile, field_id: field, value: url });
+      (state.content[currentPage.key] ||= {});
+      (state.content[currentPage.key][tile] ||= {});
+      state.content[currentPage.key][tile][field] = url;
+      applyLinkToEl(el, url);
+      showToast(url ? 'Ссылка сохранена ✓' : 'Ссылка очищена');
+    } catch (err) {
+      showToast('Не удалось сохранить: ' + err.message, 3500);
+    }
+  }
+
+  async function resetLink() {
+    if (!linkEditing) return;
+    const { el, tile, field } = linkEditing;
+    if (!confirm('Убрать ссылку и вернуть исходное значение?')) return;
+    try {
+      await api.deleteField(currentPage.key, tile, field);
+      if (state.content[currentPage.key]?.[tile]) delete state.content[currentPage.key][tile][field];
+      applyLinkToEl(el, '');
+      showToast('Ссылка сброшена');
+      endLinkEdit();
+    } catch (err) {
+      showToast('Не удалось сбросить: ' + err.message, 3500);
+    }
+  }
+
+  // Mirror of script.js applyLink — points an <a> at a URL (new tab if external).
+  function applyLinkToEl(el, url) {
+    if (!el) return;
+    const v = (url || '').trim();
+    if (!v) {
+      if (el.dataset.fiiOrigHref != null) el.setAttribute('href', el.dataset.fiiOrigHref);
+      el.removeAttribute('target');
+      return;
+    }
+    if (el.dataset.fiiOrigHref == null) el.dataset.fiiOrigHref = el.getAttribute('href') || '';
+    el.setAttribute('href', v);
+    if (/^https?:\/\//i.test(v) || v.startsWith('//')) {
+      el.setAttribute('target', '_blank');
+      el.setAttribute('rel', 'noopener noreferrer');
+    }
+  }
+
+  function positionLinkBar() {
+    if (!linkEditing || !linkBar) return;
+    const win = frame.contentWindow;
+    const r = linkEditing.el.getBoundingClientRect();
+    linkBar.style.display = 'flex';
+    const barH = linkBar.offsetHeight || 38;
+    let top = r.top + win.scrollY - barH - 8;
+    if (r.top < barH + 14) top = r.bottom + win.scrollY + 8;
+    linkBar.style.top = Math.max(4, top) + 'px';
+    linkBar.style.left = Math.max(4, r.left + win.scrollX) + 'px';
+  }
+
   // ---------- tile visibility ---------------------------------------
   async function toggleTile(tileEl) {
     const tileId = tileEl.dataset.tile;
@@ -522,6 +644,7 @@
   function repositionBars() {
     if (editing && fieldBar) positionFieldBar();
     if (imgEditing && imageBar) positionImageBar();
+    if (linkEditing && linkBar) positionLinkBar();
     if (tileBar && tileBar.style.display === 'flex' && tileBar._tile) positionTileBar(tileBar._tile);
   }
 

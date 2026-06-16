@@ -211,9 +211,52 @@ document.querySelectorAll('.cards, .cards--programs, .reviews__grid').forEach((g
         const target = tileEl.querySelector(descriptor.selector);
         if (!target) return;
         if (descriptor.type === 'image') applyImage(target, value);
+        else if (descriptor.type === 'link') applyLink(target, value);
         else if (descriptor.type === 'html') target.innerHTML = value;
         else target.textContent = value;
       });
+    });
+
+    // The mobile sidebar duplicates the header's menu and social icons but is
+    // hidden in the editor, so it isn't edited directly. Mirror the header's
+    // (possibly overridden) nav labels and social links into it so both stay
+    // in sync from a single edit.
+    syncHeaderToSidebar();
+  }
+
+  // Point an <a> at a new URL. External links open in a new tab. An empty
+  // value restores the element's original href.
+  function applyLink(el, url) {
+    const v = (url || '').trim();
+    if (!v) {
+      if (el.dataset.fiiOrigHref != null) el.setAttribute('href', el.dataset.fiiOrigHref);
+      el.removeAttribute('target');
+      return;
+    }
+    if (el.dataset.fiiOrigHref == null) el.dataset.fiiOrigHref = el.getAttribute('href') || '';
+    el.setAttribute('href', v);
+    if (/^https?:\/\//i.test(v) || v.startsWith('//')) {
+      el.setAttribute('target', '_blank');
+      el.setAttribute('rel', 'noopener noreferrer');
+    }
+  }
+
+  function syncHeaderToSidebar() {
+    const hNav = document.querySelectorAll('.header__nav-list .header__nav-link');
+    const sNav = document.querySelectorAll('.sidebar__menu .sidebar__link');
+    hNav.forEach((h, i) => { if (sNav[i]) sNav[i].textContent = h.textContent; });
+
+    const hSoc = document.querySelectorAll('.header__socials .header__social');
+    const sSoc = document.querySelectorAll('.sidebar__socials .sidebar__social');
+    hSoc.forEach((h, i) => {
+      const s = sSoc[i];
+      if (!s) return;
+      const href = h.getAttribute('href');
+      if (href) s.setAttribute('href', href); // keep sidebar's own labels (Telegram/VK/YouTube)
+      if (h.getAttribute('target')) {
+        s.setAttribute('target', h.getAttribute('target'));
+        s.setAttribute('rel', h.getAttribute('rel') || 'noopener noreferrer');
+      }
     });
   }
 
