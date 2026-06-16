@@ -95,6 +95,7 @@
     const page = PAGES.find((p) => p.key === key);
     if (!page) return;
     finishActiveEdit(false);
+    endImageEdit();
     currentPage = page;
     $$('.ed-page').forEach((b) => b.classList.toggle('is-active', b.dataset.page === key));
     $('#previewTitle').textContent = page.title;
@@ -124,10 +125,21 @@
   // =================================================================
   //  PREVIEW EDITOR — клик-редактирование внутри iframe
   // =================================================================
-  let editing = null; // { el, original, tile, field, type }
+  let editing = null;   // { el, original, tile, field, type }
+  let imgEditing = null; // { el, tile, field } — active image slot
   let fieldBar = null;
+  let imageBar = null;
   let tileBar = null;
   let tileHideTimer = null;
+
+  // One hidden file input, reused for every image slot. Lives in the admin
+  // document (not the iframe) so the native picker is unaffected by preview.
+  const imgFileInput = document.createElement('input');
+  imgFileInput.type = 'file';
+  imgFileInput.accept = 'image/*';
+  imgFileInput.style.display = 'none';
+  document.body.appendChild(imgFileInput);
+  imgFileInput.addEventListener('change', onImageChosen);
 
   const EDITOR_CSS = `
     .fii-editable{outline:1px dashed rgba(43,78,234,0);outline-offset:2px;border-radius:3px;
@@ -136,6 +148,12 @@
     .fii-editing{outline:2px solid #2b4eea !important;background:#fff !important;
       color:#1b2138 !important;cursor:text;box-shadow:0 0 0 4px rgba(43,78,234,.15);}
     [data-fii-hidden]{position:relative;opacity:.45;outline:2px dashed #e0344b;outline-offset:-2px;}
+    .fii-image-field{position:relative;}
+    .fii-image-field::after{content:'📷';position:absolute;top:2px;right:2px;font-size:12px;
+      background:rgba(43,78,234,.92);border-radius:50%;width:22px;height:22px;
+      display:flex;align-items:center;justify-content:center;opacity:0;
+      transition:opacity .12s;pointer-events:none;z-index:5;box-shadow:0 2px 6px rgba(0,0,0,.3);}
+    .fii-image-field:hover::after{opacity:1;}
     .fii-bar{position:absolute;z-index:2147483000;display:none;gap:6px;
       font-family:'Inter',system-ui,sans-serif;font-size:13px;}
     .fii-bar button{display:inline-flex;align-items:center;gap:5px;border:0;cursor:pointer;
@@ -169,6 +187,26 @@
       fieldBar.querySelector('.fii-save').addEventListener('click', (e) => { e.preventDefault(); saveEdit(); });
       fieldBar.querySelector('.fii-cancel').addEventListener('click', (e) => { e.preventDefault(); cancelEdit(); });
       fieldBar.querySelector('.fii-reset').addEventListener('click', (e) => { e.preventDefault(); resetField(); });
+    }
+    // Image-slot toolbar (upload / remove a photo)
+    if (!imageBar || imageBar.ownerDocument !== doc) {
+      imageBar = doc.createElement('div');
+      imageBar.className = 'fii-bar';
+      imageBar.innerHTML =
+        '<button type="button" class="fii-save fii-img-upload">📷 Загрузить фото</button>' +
+        '<button type="button" class="fii-toggle fii-img-text" style="display:none">✎ Текст</button>' +
+        '<button type="button" class="fii-reset fii-img-reset">↺ Убрать</button>' +
+        '<button type="button" class="fii-cancel fii-img-close">Закрыть</button>';
+      doc.body.appendChild(imageBar);
+      imageBar.querySelector('.fii-img-upload').addEventListener('click', (e) => { e.preventDefault(); pickImage(); });
+      imageBar.querySelector('.fii-img-reset').addEventListener('click', (e) => { e.preventDefault(); resetImage(); });
+      imageBar.querySelector('.fii-img-close').addEventListener('click', (e) => { e.preventDefault(); endImageEdit(); });
+      imageBar.querySelector('.fii-img-text').addEventListener('click', (e) => {
+        e.preventDefault();
+        const el = imgEditing && imgEditing.el;
+        endImageEdit();
+        if (el) startEdit(el);
+      });
     }
     // Tile visibility toolbar
     if (!tileBar || tileBar.ownerDocument !== doc) {
@@ -211,9 +249,17 @@
         try { el = tileEl.querySelector(field.selector); } catch (e) { el = null; }
         if (!el) return;
         el.dataset.fiiTile = tile.id;
-        el.dataset.fiiField = field.id;
-        el.dataset.fiiType = field.type;
         el.classList.add('fii-editable');
+        // An element can carry both a text field and an image field (e.g. an
+        // avatar showing initials that can be replaced by a photo). Track them
+        // independently so neither overwrites the other.
+        if (field.type === 'image') {
+          el.dataset.fiiImageField = field.id;
+          el.classList.add('fii-image-field');
+        } else {
+          el.dataset.fiiTextField = field.id;
+          el.dataset.fiiTextType = field.type;
+        }
       });
     });
 
@@ -235,11 +281,24 @@
       if (e.target.closest('.fii-bar')) return;
       const el = e.target.closest('.fii-editable');
       if (el && el.dataset.fiiTile) {
-        if (editing && editing.el === el) return;
-        await finishActiveEdit(true);
-        startEdit(el);
+        // Prefer the photo uploader when the element is an image slot; the
+        // toolbar still offers a shortcut to edit any accompanying text.
+        if (el.dataset.fiiImageField) {
+          if (imgEditing && imgEditing.el === el) return;
+          await finishActiveEdit(true);
+          startImageEdit(el);
+          return;
+        }
+        if (el.dataset.fiiTextField) {
+          if (editing && editing.el === el) return;
+          await finishActiveEdit(true);
+          endImageEdit();
+          startEdit(el);
+        }
       } else if (editing) {
         await finishActiveEdit(true);
+      } else if (imgEditing) {
+        endImageEdit();
       }
     });
 
@@ -261,8 +320,8 @@
   // ---------- field editing ----------------------------------------
   function startEdit(el) {
     const tile = el.dataset.fiiTile;
-    const field = el.dataset.fiiField;
-    const type = el.dataset.fiiType || 'text';
+    const field = el.dataset.fiiTextField;
+    const type = el.dataset.fiiTextType || 'text';
     editing = {
       el, tile, field, type,
       original: type === 'html' ? el.innerHTML : el.innerText,
@@ -346,6 +405,102 @@
     return (field && field.default) || '';
   }
 
+  // ---------- image slots (photo upload directly into a tile) -------
+  function startImageEdit(el) {
+    imgEditing = { el, tile: el.dataset.fiiTile, field: el.dataset.fiiImageField };
+    hideTileBar(0);
+    // Offer a shortcut to the element's text (e.g. avatar initials) if it has one.
+    if (imageBar) {
+      const textBtn = imageBar.querySelector('.fii-img-text');
+      if (textBtn) textBtn.style.display = el.dataset.fiiTextField ? 'inline-flex' : 'none';
+    }
+    positionImageBar();
+  }
+
+  function endImageEdit() {
+    imgEditing = null;
+    if (imageBar) imageBar.style.display = 'none';
+  }
+
+  function pickImage() {
+    if (!imgEditing) return;
+    imgFileInput.value = '';
+    imgFileInput.click();
+  }
+
+  async function onImageChosen() {
+    const file = imgFileInput.files && imgFileInput.files[0];
+    if (!file || !imgEditing) return;
+    if (!file.type.startsWith('image/')) { showToast('Это не изображение'); return; }
+    const { el, tile, field } = imgEditing;
+    showToast('Загружаем фото…');
+    try {
+      const { url } = await api.uploadImage(file);
+      await api.saveBlock({ page_key: currentPage.key, tile_id: tile, field_id: field, value: url });
+      (state.content[currentPage.key] ||= {});
+      (state.content[currentPage.key][tile] ||= {});
+      state.content[currentPage.key][tile][field] = url;
+      applyImageToEl(el, url);
+      positionImageBar();
+      showToast('Фото обновлено ✓');
+    } catch (err) {
+      showToast('Не удалось загрузить: ' + err.message, 3500);
+    }
+  }
+
+  async function resetImage() {
+    if (!imgEditing) return;
+    const { el, tile, field } = imgEditing;
+    if (!confirm('Убрать фотографию и вернуть исходный вид?')) return;
+    try {
+      await api.deleteField(currentPage.key, tile, field);
+      if (state.content[currentPage.key]?.[tile]) delete state.content[currentPage.key][tile][field];
+      applyImageToEl(el, '');
+      positionImageBar();
+      showToast('Фотография убрана');
+    } catch (err) {
+      showToast('Не удалось убрать: ' + err.message, 3500);
+    }
+  }
+
+  // Mirror of script.js applyImage — paints <img src> or a cover background.
+  function applyImageToEl(el, url) {
+    if (!el) return;
+    if (url) {
+      if (el.tagName === 'IMG') {
+        if (el.dataset.fiiOrigSrc == null) el.dataset.fiiOrigSrc = el.getAttribute('src') || '';
+        el.src = url;
+      } else {
+        el.style.backgroundImage = `url("${url}")`;
+        el.style.backgroundSize = 'cover';
+        el.style.backgroundPosition = 'center';
+        el.style.backgroundRepeat = 'no-repeat';
+        el.style.color = 'transparent';
+      }
+      el.classList.add('fii-has-photo');
+    } else {
+      if (el.tagName === 'IMG') {
+        if (el.dataset.fiiOrigSrc != null) el.src = el.dataset.fiiOrigSrc;
+      } else {
+        el.style.backgroundImage = '';
+        el.style.color = '';
+      }
+      el.classList.remove('fii-has-photo');
+    }
+  }
+
+  function positionImageBar() {
+    if (!imgEditing || !imageBar) return;
+    const win = frame.contentWindow;
+    const r = imgEditing.el.getBoundingClientRect();
+    imageBar.style.display = 'flex';
+    const barH = imageBar.offsetHeight || 38;
+    let top = r.top + win.scrollY - barH - 8;
+    if (r.top < barH + 14) top = r.bottom + win.scrollY + 8;
+    imageBar.style.top = Math.max(4, top) + 'px';
+    imageBar.style.left = Math.max(4, r.left + win.scrollX) + 'px';
+  }
+
   // ---------- tile visibility ---------------------------------------
   async function toggleTile(tileEl) {
     const tileId = tileEl.dataset.tile;
@@ -366,6 +521,7 @@
   // ---------- toolbar positioning -----------------------------------
   function repositionBars() {
     if (editing && fieldBar) positionFieldBar();
+    if (imgEditing && imageBar) positionImageBar();
     if (tileBar && tileBar.style.display === 'flex' && tileBar._tile) positionTileBar(tileBar._tile);
   }
 

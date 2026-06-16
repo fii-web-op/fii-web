@@ -197,10 +197,48 @@ document.querySelectorAll('.cards, .cards--programs, .reviews__grid').forEach((g
         if (!descriptor) return;
         const target = tileEl.querySelector(descriptor.selector);
         if (!target) return;
-        if (descriptor.type === 'html') target.innerHTML = value;
+        if (descriptor.type === 'image') applyImage(target, value);
+        else if (descriptor.type === 'html') target.innerHTML = value;
         else target.textContent = value;
       });
     });
+  }
+
+  // Put an uploaded image into a tile element. For <img> we swap `src`;
+  // for any other element (e.g. an avatar <div>/<span>) we paint it as a
+  // cover background and hide whatever text/initials were inside. An empty
+  // value clears the image and brings the original content back.
+  // Uploaded files live on the admin host (/uploads/...). On the public site
+  // (a different origin) a root-relative path would 404, so resolve it against
+  // the configured API base. Absolute URLs are left untouched.
+  function resolveAssetUrl(url) {
+    if (apiBase && /^\/uploads\//.test(url)) return apiBase + url;
+    return url;
+  }
+
+  function applyImage(el, rawUrl) {
+    const url = resolveAssetUrl(rawUrl);
+    if (!url) {
+      if (el.tagName === 'IMG') {
+        if (el.dataset.fiiOrigSrc != null) el.src = el.dataset.fiiOrigSrc;
+      } else {
+        el.style.backgroundImage = '';
+        el.style.color = '';
+      }
+      el.classList.remove('fii-has-photo');
+      return;
+    }
+    if (el.tagName === 'IMG') {
+      if (el.dataset.fiiOrigSrc == null) el.dataset.fiiOrigSrc = el.getAttribute('src') || '';
+      el.src = url;
+    } else {
+      el.style.backgroundImage = `url("${url}")`;
+      el.style.backgroundSize = 'cover';
+      el.style.backgroundPosition = 'center';
+      el.style.backgroundRepeat = 'no-repeat';
+      el.style.color = 'transparent'; // hide initials behind the photo
+    }
+    el.classList.add('fii-has-photo');
   }
 
   function applyTicker(items) {
