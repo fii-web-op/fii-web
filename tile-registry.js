@@ -577,4 +577,32 @@ window.PAGE_REGISTRY = [
       },
     ],
   },
+
+  // ---- ОБЩИЕ ЭЛЕМЕНТЫ (на всех страницах) ----
+  // Подвал сайта одинаков на каждой странице, поэтому он вынесен в отдельную
+  // псевдостраницу с ключом `_shared`. Правки сохраняются под page_key
+  // `_shared` и применяются скриптом сразу на всех страницах сайта.
+  {
+    key: '_shared',
+    title: 'Подвал сайта (общий)',
+    file: 'index.html',
+    tiles: [
+      {
+        id: 'site-footer', name: 'Подвал — контакты и адрес',
+        fields: [
+          { id: 'brand',      label: 'Название',           selector: '.footer__brand .header__logo-text', type: 'text', default: 'Факультет ИИ' },
+          { id: 'university', label: 'Описание',           selector: '.footer__university', type: 'multiline',
+            default: 'Факультет искусственного интеллекта Российского университета дружбы народов' },
+          { id: 'copy',       label: 'Копирайт',           selector: '.footer__copy', type: 'text', default: '© 2026 РУДН · Все права защищены' },
+          { id: 'contact-heading', label: 'Заголовок «Приёмная комиссия»', selector: '.footer__col:nth-of-type(2) .footer__heading', type: 'text', default: 'Приёмная комиссия' },
+          { id: 'phone',      label: 'Телефон',            selector: '.footer__col:nth-of-type(2) p:nth-of-type(1)', type: 'text', default: '+7 (495) 123-45-67' },
+          { id: 'email',      label: 'E-mail',             selector: '.footer__col:nth-of-type(2) p:nth-of-type(2)', type: 'text', default: 'admission@ai-faculty.ru' },
+          { id: 'hours',      label: 'Часы работы',        selector: '.footer__col:nth-of-type(2) p:nth-of-type(3)', type: 'text', default: 'Пн – Пт · 09:00 – 18:00' },
+          { id: 'address-heading', label: 'Заголовок «Адрес»', selector: '.footer__col:nth-of-type(3) .footer__heading', type: 'text', default: 'Адрес' },
+          { id: 'address-1',  label: 'Адрес, строка 1',    selector: '.footer__col:nth-of-type(3) p:nth-of-type(1)', type: 'text', default: 'Москва, ул. Примерная, 1' },
+          { id: 'address-2',  label: 'Адрес, строка 2',    selector: '.footer__col:nth-of-type(3) p:nth-of-type(2)', type: 'text', default: 'Корпус «Нейрон», 3 этаж' },
+        ],
+      },
+    ],
+  },
 ];

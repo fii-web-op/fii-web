@@ -151,6 +151,7 @@ document.querySelectorAll('.cards, .cards--programs, .reviews__grid').forEach((g
   const apiBase = (window.FII_API_BASE || (metaEl && metaEl.content) || '').replace(/\/$/, '');
 
   const pageKey = document.body?.dataset?.page || null;
+  const SHARED_KEY = '_shared'; // global tiles (footer) shared across every page
 
   // Build a map: tile_id -> field_id -> { selector, type } from the shared registry.
   function buildFieldMap(pageDef) {
@@ -164,6 +165,15 @@ document.querySelectorAll('.cards, .cards--programs, .reviews__grid').forEach((g
     return map;
   }
 
+  // Merge a page payload with the shared (global) payload. Page-level keys win
+  // on the (unexpected) chance of a collision.
+  function mergePayload(page, shared) {
+    return {
+      content:    { ...(shared.content || {}),    ...(page.content || {}) },
+      visibility: { ...(shared.visibility || {}), ...(page.visibility || {}) },
+    };
+  }
+
   // True when the page is rendered inside the admin visual editor's iframe.
   // In that case hidden tiles are kept on screen (just flagged) so the editor
   // can show them dimmed and let the admin toggle them back on.
@@ -172,7 +182,10 @@ document.querySelectorAll('.cards, .cards--programs, .reviews__grid').forEach((g
   function applyOverrides(payload) {
     const registry = window.PAGE_REGISTRY || [];
     const pageDef = registry.find(p => p.key === pageKey);
-    const fieldMap = buildFieldMap(pageDef);
+    const sharedDef = registry.find(p => p.key === SHARED_KEY);
+    // Include both the current page's tiles and the global/shared tiles so the
+    // footer (present on every page) is recognised and overridden everywhere.
+    const fieldMap = { ...buildFieldMap(pageDef), ...buildFieldMap(sharedDef) };
 
     const visibility = payload.visibility || {};
     const content    = payload.content || {};
@@ -291,15 +304,24 @@ document.querySelectorAll('.cards, .cards--programs, .reviews__grid').forEach((g
     try { document.dispatchEvent(new CustomEvent('fii:applied')); } catch (e) { /* noop */ }
   }
 
+  const fetchOverrides = (key) =>
+    fetch(`${apiBase}/api/public/overrides?page_key=${encodeURIComponent(key)}`, { credentials: 'omit' });
+
   async function load() {
-    if (!pageKey) { signalReady(); return; }
     if (apiBase) {
       try {
-        const res = await fetch(`${apiBase}/api/public/overrides?page_key=${encodeURIComponent(pageKey)}`,
-                                { credentials: 'omit' });
-        if (res.ok) {
-          const data = await res.json();
-          applyOverrides(data);
+        // Page overrides + global (footer) overrides in parallel; the footer
+        // lives under `_shared` so a single edit there applies to every page.
+        const [pageRes, sharedRes] = await Promise.all([
+          pageKey ? fetchOverrides(pageKey) : Promise.resolve(null),
+          fetchOverrides(SHARED_KEY),
+        ]);
+        const pageOk = pageRes && pageRes.ok;
+        const sharedOk = sharedRes && sharedRes.ok;
+        if (pageOk || sharedOk) {
+          const data = pageOk ? await pageRes.json() : { content: {}, visibility: {}, ticker: [] };
+          const shared = sharedOk ? await sharedRes.json() : { content: {}, visibility: {} };
+          applyOverrides(mergePayload(data, shared));
           applyTicker(data.ticker || [], true);
           signalReady();
           return;
