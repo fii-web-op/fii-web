@@ -97,6 +97,14 @@
   };
   const deletePhoto  = (id)       => request(`/api/admin/photos/${id}`, { method: 'DELETE' });
 
+  // Inline image upload (e.g. a photo dropped straight into a tile). Returns
+  // { url, original_name }; the URL is stored as the block field value.
+  const uploadImage  = (file)     => {
+    const fd = new FormData();
+    fd.append('file', file);
+    return request('/api/admin/uploads/image', { method: 'POST', form: fd });
+  };
+
   global.FiiAdminApi = {
     getToken, setToken, clearToken,
     login, logout, me,
@@ -104,6 +112,6 @@
     listVisibility, setVisibility,
     getTicker, replaceTicker,
     listNews, createNews, deleteNews,
-    listPhotos, uploadPhotos, deletePhoto,
+    listPhotos, uploadPhotos, deletePhoto, uploadImage,
   };
 })(window);

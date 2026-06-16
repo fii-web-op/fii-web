@@ -116,6 +116,7 @@ window.PAGE_REGISTRY = [
         id: 'review-1', name: 'Отзыв · Анна Климова',
         fields: [
           { id: 'avatar', label: 'Инициалы',     selector: '.review__avatar', type: 'text', default: 'АК' },
+          { id: 'photo',  label: 'Фотография',    selector: '.review__avatar', type: 'image', default: '' },
           { id: 'name',   label: 'Имя',          selector: '.review__name',   type: 'text', default: 'Анна Климова' },
           { id: 'role',   label: 'Роль',         selector: '.review__role',   type: 'text', default: '3 курс, ИИ и МО' },
           { id: 'text',   label: 'Текст отзыва', selector: '.review__text',   type: 'multiline',
@@ -126,6 +127,7 @@ window.PAGE_REGISTRY = [
         id: 'review-2', name: 'Отзыв · Дмитрий Морозов',
         fields: [
           { id: 'avatar', label: 'Инициалы',     selector: '.review__avatar', type: 'text', default: 'ДМ' },
+          { id: 'photo',  label: 'Фотография',    selector: '.review__avatar', type: 'image', default: '' },
           { id: 'name',   label: 'Имя',          selector: '.review__name',   type: 'text', default: 'Дмитрий Морозов' },
           { id: 'role',   label: 'Роль',         selector: '.review__role',   type: 'text', default: 'Выпускник 2025' },
           { id: 'text',   label: 'Текст отзыва', selector: '.review__text',   type: 'multiline',
@@ -136,6 +138,7 @@ window.PAGE_REGISTRY = [
         id: 'review-3', name: 'Отзыв · Елена Сидорова',
         fields: [
           { id: 'avatar', label: 'Инициалы',     selector: '.review__avatar', type: 'text', default: 'ЕС' },
+          { id: 'photo',  label: 'Фотография',    selector: '.review__avatar', type: 'image', default: '' },
           { id: 'name',   label: 'Имя',          selector: '.review__name',   type: 'text', default: 'Елена Сидорова' },
           { id: 'role',   label: 'Роль',         selector: '.review__role',   type: 'text', default: '2 курс, Робототехника' },
           { id: 'text',   label: 'Текст отзыва', selector: '.review__text',   type: 'multiline',
@@ -231,6 +234,7 @@ window.PAGE_REGISTRY = [
       },
       { id: 'teacher-card-1', name: 'Преподаватель 1 · Иванов', fields: [
           { id: 'avatar', label: 'Инициалы',      selector: '.teacher-card__avatar', type: 'text', default: 'АИ' },
+          { id: 'photo',  label: 'Фотография',    selector: '.teacher-card__avatar', type: 'image', default: '' },
           { id: 'name',   label: 'ФИО',           selector: '.teacher-card__name',   type: 'text', default: 'Иванов Алексей Петрович' },
           { id: 'rank',   label: 'Учёная степень', selector: '.teacher-card__rank',  type: 'text', default: 'д.т.н., профессор' },
           { id: 'role',   label: 'Должность',     selector: '.teacher-card__role',   type: 'text', default: 'Заведующий кафедрой машинного обучения' },
@@ -239,6 +243,7 @@ window.PAGE_REGISTRY = [
       ]},
       { id: 'teacher-card-2', name: 'Преподаватель 2 · Смирнова', fields: [
           { id: 'avatar', label: 'Инициалы',      selector: '.teacher-card__avatar', type: 'text', default: 'СЕ' },
+          { id: 'photo',  label: 'Фотография',    selector: '.teacher-card__avatar', type: 'image', default: '' },
           { id: 'name',   label: 'ФИО',           selector: '.teacher-card__name',   type: 'text', default: 'Смирнова Елена Викторовна' },
           { id: 'rank',   label: 'Учёная степень', selector: '.teacher-card__rank',  type: 'text', default: 'к.ф.-м.н., доцент' },
           { id: 'role',   label: 'Должность',     selector: '.teacher-card__role',   type: 'text', default: 'Специалист по компьютерному зрению' },
@@ -247,6 +252,7 @@ window.PAGE_REGISTRY = [
       ]},
       { id: 'teacher-card-3', name: 'Преподаватель 3 · Козлов', fields: [
           { id: 'avatar', label: 'Инициалы',      selector: '.teacher-card__avatar', type: 'text', default: 'КД' },
+          { id: 'photo',  label: 'Фотография',    selector: '.teacher-card__avatar', type: 'image', default: '' },
           { id: 'name',   label: 'ФИО',           selector: '.teacher-card__name',   type: 'text', default: 'Козлов Дмитрий Андреевич' },
           { id: 'rank',   label: 'Учёная степень', selector: '.teacher-card__rank',  type: 'text', default: 'PhD, доцент' },
           { id: 'role',   label: 'Должность',     selector: '.teacher-card__role',   type: 'text', default: 'Эксперт в области NLP и LLM' },
@@ -255,6 +261,7 @@ window.PAGE_REGISTRY = [
       ]},
       { id: 'teacher-card-4', name: 'Преподаватель 4 · Петрова', fields: [
           { id: 'avatar', label: 'Инициалы',      selector: '.teacher-card__avatar', type: 'text', default: 'ПО' },
+          { id: 'photo',  label: 'Фотография',    selector: '.teacher-card__avatar', type: 'image', default: '' },
           { id: 'name',   label: 'ФИО',           selector: '.teacher-card__name',   type: 'text', default: 'Петрова Ольга Николаевна' },
           { id: 'rank',   label: 'Учёная степень', selector: '.teacher-card__rank',  type: 'text', default: 'д.т.н., профессор' },
           { id: 'role',   label: 'Должность',     selector: '.teacher-card__role',   type: 'text', default: 'Научный руководитель лаборатории робототехники' },
@@ -263,6 +270,7 @@ window.PAGE_REGISTRY = [
       ]},
       { id: 'teacher-card-5', name: 'Преподаватель 5 · Новиков', fields: [
           { id: 'avatar', label: 'Инициалы',      selector: '.teacher-card__avatar', type: 'text', default: 'НС' },
+          { id: 'photo',  label: 'Фотография',    selector: '.teacher-card__avatar', type: 'image', default: '' },
           { id: 'name',   label: 'ФИО',           selector: '.teacher-card__name',   type: 'text', default: 'Новиков Сергей Михайлович' },
           { id: 'rank',   label: 'Учёная степень', selector: '.teacher-card__rank',  type: 'text', default: 'к.т.н., старший преподаватель' },
           { id: 'role',   label: 'Должность',     selector: '.teacher-card__role',   type: 'text', default: 'Специалист по обучению с подкреплением' },
@@ -271,6 +279,7 @@ window.PAGE_REGISTRY = [
       ]},
       { id: 'teacher-card-6', name: 'Преподаватель 6 · Захарова', fields: [
           { id: 'avatar', label: 'Инициалы',      selector: '.teacher-card__avatar', type: 'text', default: 'ЗМ' },
+          { id: 'photo',  label: 'Фотография',    selector: '.teacher-card__avatar', type: 'image', default: '' },
           { id: 'name',   label: 'ФИО',           selector: '.teacher-card__name',   type: 'text', default: 'Захарова Мария Дмитриевна' },
           { id: 'rank',   label: 'Учёная степень', selector: '.teacher-card__rank',  type: 'text', default: 'PhD, доцент' },
           { id: 'role',   label: 'Должность',     selector: '.teacher-card__role',   type: 'text', default: 'Исследователь в области генеративных моделей' },
