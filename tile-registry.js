@@ -21,6 +21,11 @@ window.PAGE_REGISTRY = [
             default: 'Узнать шансы поступления' },
           { id: 'btn-outline', label: 'Кнопка справа',   selector: '.hero__actions .btn--outline', type: 'text',
             default: 'Программы обучения' },
+          { id: 'meta-1-label', label: 'Плашка 1 · подпись', selector: '.hero__meta-item:nth-of-type(1) .hero__meta-label', type: 'text', default: 'До конца приёма' },
+          { id: 'meta-2-label', label: 'Плашка 2 · подпись', selector: '.hero__meta-item:nth-of-type(2) .hero__meta-label', type: 'text', default: 'Сейчас учатся' },
+          { id: 'meta-2-value', label: 'Плашка 2 · значение', selector: '.hero__meta-item:nth-of-type(2) .hero__meta-value', type: 'text', default: '127 студентов' },
+          { id: 'meta-3-label', label: 'Плашка 3 · подпись', selector: '.hero__meta-item:nth-of-type(3) .hero__meta-label', type: 'text', default: 'Приём декана' },
+          { id: 'meta-3-value', label: 'Плашка 3 · значение', selector: '.hero__meta-item:nth-of-type(3) .hero__meta-value', type: 'text', default: 'Ср · 15:00 – 17:00' },
         ],
       },
       {

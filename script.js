@@ -271,8 +271,8 @@ document.querySelectorAll('.cards, .cards--programs, .reviews__grid').forEach((g
       return;
     }
     if (ticker) ticker.style.display = '';
-    const doubled = [...items, ...items];
-    track.innerHTML = doubled.map(text => {
+
+    const renderItem = (text) => {
       const span = document.createElement('span');
       span.className = 'ticker__item';
       const dot = document.createElement('span');
@@ -280,7 +280,22 @@ document.querySelectorAll('.cards, .cards--programs, .reviews__grid').forEach((g
       span.appendChild(dot);
       span.appendChild(document.createTextNode(text));
       return span.outerHTML;
-    }).join('');
+    };
+
+    // Render a single pass first and measure it. The seamless CSS loop
+    // (translateX(-50%)) needs the items duplicated — but duplicating a short
+    // list that already fits the bar makes it look obviously doubled. So we
+    // only duplicate when one pass overflows the visible bar; otherwise the
+    // items are shown once, static.
+    track.style.animation = '';
+    track.innerHTML = items.map(renderItem).join('');
+    const containerW = (ticker && ticker.clientWidth) || track.clientWidth || 0;
+    const oneSetW = track.scrollWidth || 0;
+    if (oneSetW > containerW + 1) {
+      track.innerHTML = [...items, ...items].map(renderItem).join('');
+    } else {
+      track.style.animation = 'none'; // fits on screen → no scroll, no copy
+    }
   }
 
   function readLocalFallback() {
