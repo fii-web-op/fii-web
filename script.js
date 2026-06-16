@@ -325,20 +325,21 @@ document.querySelectorAll('.cards, .cards--programs, .reviews__grid').forEach((g
       return span.outerHTML;
     };
 
-    // Render a single pass first and measure it. The seamless CSS loop
-    // (translateX(-50%)) needs the items duplicated — but duplicating a short
-    // list that already fits the bar makes it look obviously doubled. So we
-    // only duplicate when one pass overflows the visible bar; otherwise the
-    // items are shown once, static.
+    // Render a single pass first and measure it. The seamless CSS loop scrolls
+    // the track by translateX(-50%), which only looks continuous when each
+    // half is at least as wide as the visible bar. For short lists one pass is
+    // narrower than the bar, so the animation barely moves and looks static /
+    // obviously doubled. Fix: repeat the items until one half fills the bar,
+    // then mirror that half — the ticker always runs smoothly.
     track.style.animation = '';
     track.innerHTML = items.map(renderItem).join('');
     const containerW = (ticker && ticker.clientWidth) || track.clientWidth || 0;
     const oneSetW = track.scrollWidth || 0;
-    if (oneSetW > containerW + 1) {
-      track.innerHTML = [...items, ...items].map(renderItem).join('');
-    } else {
-      track.style.animation = 'none'; // fits on screen → no scroll, no copy
-    }
+    let reps = 1;
+    if (oneSetW > 0 && containerW > 0) reps = Math.max(1, Math.ceil(containerW / oneSetW));
+    const half = [];
+    for (let i = 0; i < reps; i++) half.push(...items);
+    track.innerHTML = [...half, ...half].map(renderItem).join('');
   }
 
   function readLocalFallback() {
