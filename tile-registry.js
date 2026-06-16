@@ -338,6 +338,51 @@ window.PAGE_REGISTRY = [
         ],
       },
       {
+        id: 'leadership-section', name: 'Секция «Деканат и лаборатория ИИ» — заголовок',
+        fields: [
+          { id: 'eyebrow', label: 'Надзаголовок', selector: '.about-section__eyebrow', type: 'text', default: '02 — Руководство' },
+          { id: 'title',   label: 'Заголовок',    selector: '.about-section__title',   type: 'text', default: 'Деканат и лаборатория ИИ.' },
+          { id: 'intro',   label: 'Вступление',   selector: '.about-section__intro',   type: 'multiline',
+            default: 'Деканы факультета и заместители руководителя лаборатории искусственного интеллекта — команда, которая курирует образовательную и научную работу.' },
+        ],
+      },
+      {
+        id: 'leadership-dean', name: 'Руководство · Декан',
+        fields: [
+          { id: 'photo',   label: 'Фотография', selector: '.leadership-card__photo',   type: 'image', default: '' },
+          { id: 'role',    label: 'Должность',  selector: '.leadership-card__role',    type: 'text', default: 'Декан' },
+          { id: 'name',    label: 'ФИО',        selector: '.leadership-card__name',    type: 'text', default: 'Имя Фамилия' },
+          { id: 'caption', label: 'Подпись',    selector: '.leadership-card__caption', type: 'multiline', default: 'Декан факультета искусственного интеллекта.' },
+        ],
+      },
+      {
+        id: 'leadership-vice-dean', name: 'Руководство · Заместитель декана',
+        fields: [
+          { id: 'photo',   label: 'Фотография', selector: '.leadership-card__photo',   type: 'image', default: '' },
+          { id: 'role',    label: 'Должность',  selector: '.leadership-card__role',    type: 'text', default: 'Заместитель декана' },
+          { id: 'name',    label: 'ФИО',        selector: '.leadership-card__name',    type: 'text', default: 'Имя Фамилия' },
+          { id: 'caption', label: 'Подпись',    selector: '.leadership-card__caption', type: 'multiline', default: 'Заместитель декана по учебной работе.' },
+        ],
+      },
+      {
+        id: 'leadership-lab-deputy-1', name: 'Руководство · Зам. лаборатории ИИ (1)',
+        fields: [
+          { id: 'photo',   label: 'Фотография', selector: '.leadership-card__photo',   type: 'image', default: '' },
+          { id: 'role',    label: 'Должность',  selector: '.leadership-card__role',    type: 'text', default: 'Зам. лаборатории ИИ' },
+          { id: 'name',    label: 'ФИО',        selector: '.leadership-card__name',    type: 'text', default: 'Имя Фамилия' },
+          { id: 'caption', label: 'Подпись',    selector: '.leadership-card__caption', type: 'multiline', default: 'Заместитель руководителя лаборатории ИИ.' },
+        ],
+      },
+      {
+        id: 'leadership-lab-deputy-2', name: 'Руководство · Зам. лаборатории ИИ (2)',
+        fields: [
+          { id: 'photo',   label: 'Фотография', selector: '.leadership-card__photo',   type: 'image', default: '' },
+          { id: 'role',    label: 'Должность',  selector: '.leadership-card__role',    type: 'text', default: 'Зам. лаборатории ИИ' },
+          { id: 'name',    label: 'ФИО',        selector: '.leadership-card__name',    type: 'text', default: 'Имя Фамилия' },
+          { id: 'caption', label: 'Подпись',    selector: '.leadership-card__caption', type: 'multiline', default: 'Заместитель руководителя лаборатории ИИ.' },
+        ],
+      },
+      {
         id: 'partners-section', name: 'Секция «Партнёры и практика»',
         fields: [
           { id: 'eyebrow', label: 'Надзаголовок', selector: '.about-section__eyebrow', type: 'text', default: 'Партнёры' },

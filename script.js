@@ -241,9 +241,23 @@ document.querySelectorAll('.cards, .cards--programs, .reviews__grid').forEach((g
     el.classList.add('fii-has-photo');
   }
 
-  function applyTicker(items) {
+  // `authoritative` is true when the items come straight from the CMS API.
+  // In that case an empty list means the admin deliberately cleared the
+  // ticker — so we wipe the hardcoded fallback items and hide the bar,
+  // instead of leaving the page's default markup on screen. For the
+  // localStorage/offline fallback we only override when there is content.
+  function applyTicker(items, authoritative) {
+    const ticker = document.querySelector('.ticker');
     const track = document.querySelector('.ticker__track');
-    if (!track || !Array.isArray(items) || !items.length) return;
+    if (!track) return;
+    if (!Array.isArray(items) || !items.length) {
+      if (authoritative) {
+        track.innerHTML = '';
+        if (ticker) ticker.style.display = 'none';
+      }
+      return;
+    }
+    if (ticker) ticker.style.display = '';
     const doubled = [...items, ...items];
     track.innerHTML = doubled.map(text => {
       const span = document.createElement('span');
@@ -286,7 +300,7 @@ document.querySelectorAll('.cards, .cards--programs, .reviews__grid').forEach((g
         if (res.ok) {
           const data = await res.json();
           applyOverrides(data);
-          applyTicker(data.ticker || []);
+          applyTicker(data.ticker || [], true);
           signalReady();
           return;
         }
@@ -296,7 +310,7 @@ document.querySelectorAll('.cards, .cards--programs, .reviews__grid').forEach((g
     }
     const fallback = readLocalFallback();
     applyOverrides(fallback);
-    applyTicker(fallback.ticker);
+    applyTicker(fallback.ticker, false);
     signalReady();
   }
 
