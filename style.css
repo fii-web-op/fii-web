@@ -1973,6 +1973,12 @@ h1 em, h2 em, h3 em {
   pointer-events: none;
 }
 
+/* CMS: when an admin uploads a photo into a tile, hide the placeholder
+   artwork (icon / initials / decorative overlay) so the photo shows cleanly. */
+.fii-has-photo > svg { display: none !important; }
+.leadership-card__photo.fii-has-photo::after { display: none !important; }
+.fii-has-photo { color: transparent !important; }
+
 .leadership-card__photo svg {
   width: 56px;
   height: 56px;
