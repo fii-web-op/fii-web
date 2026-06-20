@@ -77,6 +77,7 @@
   // Dynamic blocks (admin-added, repeatable items inside a page list)
   const listDynamicBlocks  = ()      => request('/api/admin/blocks/dynamic');
   const createDynamicBlock = (b)     => request('/api/admin/blocks/dynamic', { method: 'POST', body: b });
+  const bulkCreateDynamicBlocks = (b) => request('/api/admin/blocks/dynamic/bulk', { method: 'POST', body: b });
   const updateDynamicBlock = (p, t, b) =>
     request(`/api/admin/blocks/dynamic/${encodeURIComponent(t)}?page_key=${encodeURIComponent(p)}`, { method: 'PATCH', body: b });
   const deleteDynamicBlock = (p, t)  =>
@@ -117,7 +118,7 @@
     getToken, setToken, clearToken,
     login, logout, me,
     listBlocks, saveBlock, deleteTile, deleteField, resetAll,
-    listDynamicBlocks, createDynamicBlock, updateDynamicBlock, deleteDynamicBlock,
+    listDynamicBlocks, createDynamicBlock, bulkCreateDynamicBlocks, updateDynamicBlock, deleteDynamicBlock,
     listVisibility, setVisibility,
     getTicker, replaceTicker,
     listNews, createNews, deleteNews,

@@ -38,6 +38,8 @@
   // In-memory mirror of overrides/visibility — keyed by page → tile → field.
   const state = { content: {}, visibility: {}, ticker: [], news: [], photos: [] };
   const loaded = { ticker: false, news: false, photos: false };
+  // Lists already converted to managed (dynamic) blocks — "pageKey||listId".
+  const adoptedLists = new Set();
 
   const frame = $('#preview');
   let currentPage = PAGES[0] || null;
@@ -55,7 +57,9 @@
       console.warn(e);
     }
     try {
-      const [blocks, vis] = await Promise.all([api.listBlocks(), api.listVisibility()]);
+      const [blocks, vis, dynamic] = await Promise.all([
+        api.listBlocks(), api.listVisibility(), api.listDynamicBlocks(),
+      ]);
       for (const r of blocks) {
         (state.content[r.page_key] ||= {});
         (state.content[r.page_key][r.tile_id] ||= {});
@@ -65,6 +69,7 @@
         (state.visibility[r.page_key] ||= {});
         state.visibility[r.page_key][r.tile_id] = r.is_visible;
       }
+      for (const b of dynamic) adoptedLists.add(b.page_key + '||' + b.list_id);
     } catch (e) { console.warn('Не удалось загрузить состояние:', e); }
 
     renderPagesNav();
@@ -175,7 +180,8 @@
     .fii-bar .fii-toggle{background:#0f1530;color:#fff;}
     .fii-bar button:hover{filter:brightness(1.08);}
     .fii-add-block{display:flex;align-items:center;justify-content:center;gap:8px;
-      width:100%;margin:18px 0 4px;padding:14px 18px;cursor:pointer;
+      flex:0 0 auto;min-width:220px;min-height:90px;align-self:stretch;
+      margin:0;padding:18px 22px;cursor:pointer;
       font-family:'Inter',system-ui,sans-serif;font-size:14px;font-weight:600;
       color:#2b4eea;background:rgba(43,78,234,.06);border:2px dashed rgba(43,78,234,.5);
       border-radius:12px;transition:background .12s,border-color .12s;}
@@ -293,10 +299,62 @@
     // Admin-added dynamic blocks (rendered by script.js with data-fii-template).
     doc.querySelectorAll('[data-fii-template]').forEach((el) => bindDynamicBlockEl(el, doc));
 
-    // "＋ Add block" control under every list container on the page.
+    // First-time migration: adopt a list's existing static items as managed blocks.
+    (currentPage.lists || []).forEach((list) => maybeAdoptList(list, doc));
+
+    // "＋ Add block" control inside every list container on the page.
     ensureAddButtons(doc);
 
     bindDoc(doc, win);
+  }
+
+  // Read the field values of one static item straight from the rendered DOM, so
+  // adoption captures the page's current content (including any saved overrides).
+  function extractFieldsFromEl(el, fields) {
+    const out = {};
+    (fields || []).forEach((f) => {
+      if (f.type === 'image' || f.type === 'link') return; // not adoptable from static text
+      let node;
+      try { node = el.querySelector(f.selector); } catch (e) { node = null; }
+      if (!node) return;
+      out[f.id] = f.type === 'html' ? node.innerHTML.trim() : node.textContent.trim();
+    });
+    return out;
+  }
+
+  async function maybeAdoptList(list, doc) {
+    const key = currentPage.key + '||' + list.id;
+    if (adoptedLists.has(key)) return;
+    const container = doc.querySelector(list.container);
+    if (!container) return;
+    // If the list already shows dynamic blocks, it's been adopted elsewhere.
+    if (container.querySelector('[data-fii-template]')) { adoptedLists.add(key); return; }
+    const tmpl = (currentPage.templates || {})[list.template];
+    if (!tmpl) return;
+    const items = Array.from(container.children).filter((el) => {
+      try { return el.matches(list.item); } catch (e) { return false; }
+    });
+    if (!items.length) return;
+
+    adoptedLists.add(key); // optimistic — avoids re-entry while the request is in flight
+    try {
+      const payloadItems = items.map((el) => ({ fields: extractFieldsFromEl(el, tmpl.fields) }));
+      const created = await api.bulkCreateDynamicBlocks({
+        page_key: currentPage.key, list_id: list.id, template_id: list.template, items: payloadItems,
+      });
+      items.forEach((el, i) => {
+        const block = created[i];
+        if (!block) return;
+        el.dataset.tile = block.tile_id;
+        el.dataset.fiiTemplate = list.template;
+        bindDynamicBlockEl(el, doc);
+        (state.content[currentPage.key] ||= {});
+        state.content[currentPage.key][block.tile_id] = payloadItems[i].fields;
+      });
+    } catch (err) {
+      // Conflict (already adopted in the DB) keeps the guard; reconciled on reload.
+      console.warn('Не удалось перевести список в управляемый:', err.message);
+    }
   }
 
   // Mark the elements inside a tile as click-to-edit, per their field descriptors.
@@ -338,9 +396,12 @@
       const btn = doc.createElement('button');
       btn.type = 'button';
       btn.className = 'fii-add-block';
+      btn.dataset.fiiAddList = list.id;
       btn.textContent = '＋ ' + (list.addLabel || 'Добавить блок');
       btn.addEventListener('click', (e) => { e.preventDefault(); addBlock(list); });
-      container.parentNode.insertBefore(btn, container.nextSibling);
+      // Sits as the last item of the list (a grid cell / a tile at the end of a
+      // carousel) so it scopes to its own container.
+      container.appendChild(btn);
     });
   }
 
@@ -364,7 +425,8 @@
       if (!container || !el) { showToast('Блок создан — обновите превью'); return; }
       el.dataset.tile = block.tile_id;
       el.dataset.fiiTemplate = list.template;
-      container.appendChild(el);
+      const addBtn = container.querySelector('.fii-add-block');
+      container.insertBefore(el, addBtn || null);
       bindDynamicBlockEl(el, doc);
       (state.content[currentPage.key] ||= {});
       state.content[currentPage.key][block.tile_id] = { ...defaults };
