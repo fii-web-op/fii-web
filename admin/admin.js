@@ -171,8 +171,15 @@
     .fii-bar .fii-save{background:#2b4eea;color:#fff;}
     .fii-bar .fii-cancel{background:#fff;color:#1b2138;}
     .fii-bar .fii-reset{background:#fff;color:#e0344b;}
+    .fii-bar .fii-del{background:#e0344b;color:#fff;}
     .fii-bar .fii-toggle{background:#0f1530;color:#fff;}
     .fii-bar button:hover{filter:brightness(1.08);}
+    .fii-add-block{display:flex;align-items:center;justify-content:center;gap:8px;
+      width:100%;margin:18px 0 4px;padding:14px 18px;cursor:pointer;
+      font-family:'Inter',system-ui,sans-serif;font-size:14px;font-weight:600;
+      color:#2b4eea;background:rgba(43,78,234,.06);border:2px dashed rgba(43,78,234,.5);
+      border-radius:12px;transition:background .12s,border-color .12s;}
+    .fii-add-block:hover{background:rgba(43,78,234,.12);border-color:#2b4eea;}
   `;
 
   function injectStyle(doc) {
@@ -237,17 +244,23 @@
         if (el) startEdit(el);
       });
     }
-    // Tile visibility toolbar
+    // Tile visibility toolbar (+ delete, for admin-added dynamic blocks)
     if (!tileBar || tileBar.ownerDocument !== doc) {
       tileBar = doc.createElement('div');
       tileBar.className = 'fii-bar';
-      tileBar.innerHTML = '<button type="button" class="fii-toggle"></button>';
+      tileBar.innerHTML =
+        '<button type="button" class="fii-toggle"></button>' +
+        '<button type="button" class="fii-del" style="display:none">🗑 Удалить блок</button>';
       doc.body.appendChild(tileBar);
       tileBar.addEventListener('mouseenter', () => clearTimeout(tileHideTimer));
       tileBar.addEventListener('mouseleave', () => hideTileBar(250));
       tileBar.querySelector('.fii-toggle').addEventListener('click', (e) => {
         e.preventDefault();
         if (tileBar._tile) toggleTile(tileBar._tile);
+      });
+      tileBar.querySelector('.fii-del').addEventListener('click', (e) => {
+        e.preventDefault();
+        if (tileBar._tile) deleteBlock(tileBar._tile);
       });
     }
   }
@@ -268,34 +281,113 @@
     injectStyle(doc);
     ensureBars(doc);
 
+    // Static tiles described directly in the registry.
     (currentPage.tiles || []).forEach((tile) => {
       let tileEl;
       try { tileEl = doc.querySelector(`[data-tile="${tile.id}"]`); } catch (e) { tileEl = null; }
       if (!tileEl) return;
       bindTile(tileEl, doc);
-      (tile.fields || []).forEach((field) => {
-        let el;
-        try { el = tileEl.querySelector(field.selector); } catch (e) { el = null; }
-        if (!el) return;
-        el.dataset.fiiTile = tile.id;
-        el.classList.add('fii-editable');
-        // An element can carry both a text field and an image field (e.g. an
-        // avatar showing initials that can be replaced by a photo). Track them
-        // independently so neither overwrites the other.
-        if (field.type === 'image') {
-          el.dataset.fiiImageField = field.id;
-          el.classList.add('fii-image-field');
-        } else if (field.type === 'link') {
-          el.dataset.fiiLinkField = field.id;
-          el.classList.add('fii-link-field');
-        } else {
-          el.dataset.fiiTextField = field.id;
-          el.dataset.fiiTextType = field.type;
-        }
-      });
+      bindFields(tileEl, tile.id, tile.fields);
     });
 
+    // Admin-added dynamic blocks (rendered by script.js with data-fii-template).
+    doc.querySelectorAll('[data-fii-template]').forEach((el) => bindDynamicBlockEl(el, doc));
+
+    // "＋ Add block" control under every list container on the page.
+    ensureAddButtons(doc);
+
     bindDoc(doc, win);
+  }
+
+  // Mark the elements inside a tile as click-to-edit, per their field descriptors.
+  function bindFields(tileEl, tileId, fields) {
+    (fields || []).forEach((field) => {
+      let el;
+      try { el = tileEl.querySelector(field.selector); } catch (e) { el = null; }
+      if (!el) return;
+      el.dataset.fiiTile = tileId;
+      el.classList.add('fii-editable');
+      // An element can carry both a text field and an image field (e.g. an
+      // avatar showing initials that can be replaced by a photo). Track them
+      // independently so neither overwrites the other.
+      if (field.type === 'image') {
+        el.dataset.fiiImageField = field.id;
+        el.classList.add('fii-image-field');
+      } else if (field.type === 'link') {
+        el.dataset.fiiLinkField = field.id;
+        el.classList.add('fii-link-field');
+      } else {
+        el.dataset.fiiTextField = field.id;
+        el.dataset.fiiTextType = field.type;
+      }
+    });
+  }
+
+  function bindDynamicBlockEl(blockEl, doc) {
+    const tmpl = (currentPage.templates || {})[blockEl.dataset.fiiTemplate];
+    if (!tmpl) return;
+    bindTile(blockEl, doc);
+    bindFields(blockEl, blockEl.dataset.tile, tmpl.fields);
+  }
+
+  function ensureAddButtons(doc) {
+    (currentPage.lists || []).forEach((list) => {
+      const container = doc.querySelector(list.container);
+      if (!container || container.__fiiAddBound) return;
+      container.__fiiAddBound = true;
+      const btn = doc.createElement('button');
+      btn.type = 'button';
+      btn.className = 'fii-add-block';
+      btn.textContent = '＋ ' + (list.addLabel || 'Добавить блок');
+      btn.addEventListener('click', (e) => { e.preventDefault(); addBlock(list); });
+      container.parentNode.insertBefore(btn, container.nextSibling);
+    });
+  }
+
+  // ---------- dynamic blocks: add / delete --------------------------
+  async function addBlock(list) {
+    const tmpl = (currentPage.templates || {})[list.template];
+    if (!tmpl) return;
+    const defaults = {};
+    (tmpl.fields || []).forEach((f) => { if (f.default) defaults[f.id] = f.default; });
+    try {
+      const block = await api.createDynamicBlock({
+        page_key: currentPage.key, list_id: list.id, template_id: list.template, fields: defaults,
+      });
+      const doc = frame.contentDocument;
+      const container = doc.querySelector(list.container);
+      const el = (() => {
+        const wrap = doc.createElement('div');
+        wrap.innerHTML = (tmpl.html || '').trim();
+        return wrap.firstElementChild;
+      })();
+      if (!container || !el) { showToast('Блок создан — обновите превью'); return; }
+      el.dataset.tile = block.tile_id;
+      el.dataset.fiiTemplate = list.template;
+      container.appendChild(el);
+      bindDynamicBlockEl(el, doc);
+      (state.content[currentPage.key] ||= {});
+      state.content[currentPage.key][block.tile_id] = { ...defaults };
+      showToast('Блок добавлен ✓ — кликните, чтобы отредактировать');
+    } catch (err) {
+      showToast('Не удалось добавить: ' + err.message, 3500);
+    }
+  }
+
+  async function deleteBlock(tileEl) {
+    const tileId = tileEl.dataset.tile;
+    if (!tileId) return;
+    if (!confirm('Удалить этот блок? Действие нельзя отменить.')) return;
+    try {
+      await api.deleteDynamicBlock(currentPage.key, tileId);
+      if (state.content[currentPage.key]) delete state.content[currentPage.key][tileId];
+      if (state.visibility[currentPage.key]) delete state.visibility[currentPage.key][tileId];
+      hideTileBar(0);
+      tileEl.remove();
+      showToast('Блок удалён');
+    } catch (err) {
+      showToast('Не удалось удалить: ' + err.message, 3500);
+    }
   }
 
   function bindDoc(doc, win) {
@@ -427,7 +519,7 @@
   async function resetField() {
     if (!editing) return;
     const { el, tile, field, type } = editing;
-    const def = getFieldDefault(tile, field);
+    const def = getFieldDefault(tile, field, el);
     if (!confirm('Вернуть исходный текст этого элемента?')) return;
     try {
       await api.deleteField(currentPage.key, tile, field);
@@ -440,9 +532,15 @@
     }
   }
 
-  function getFieldDefault(tileId, fieldId) {
+  function getFieldDefault(tileId, fieldId, el) {
     const tile = (currentPage.tiles || []).find((t) => t.id === tileId);
-    const field = tile && (tile.fields || []).find((f) => f.id === fieldId);
+    let field = tile && (tile.fields || []).find((f) => f.id === fieldId);
+    if (!field && el) {
+      // Dynamic block: its defaults live in the page template, not in `tiles`.
+      const host = el.closest('[data-fii-template]');
+      const tmpl = host && (currentPage.templates || {})[host.dataset.fiiTemplate];
+      field = tmpl && (tmpl.fields || []).find((f) => f.id === fieldId);
+    }
     return (field && field.default) || '';
   }
 
@@ -663,6 +761,9 @@
     if (editing) return;
     tileBar._tile = tileEl;
     updateTileBarLabel(tileEl);
+    // Only admin-added (dynamic) blocks can be deleted; static tiles only hide.
+    const delBtn = tileBar.querySelector('.fii-del');
+    if (delBtn) delBtn.style.display = tileEl.dataset.fiiTemplate ? 'inline-flex' : 'none';
     tileBar.style.display = 'flex';
     positionTileBar(tileEl);
   }

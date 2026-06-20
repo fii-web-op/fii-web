@@ -29,13 +29,14 @@ from .config import get_settings
 from .routes import admin as admin_routes
 from .routes import auth as auth_routes
 from .routes import public as public_routes
-from .seed import ensure_initial_admin, init_db
+from .seed import ensure_initial_admin, init_db, seed_dynamic_blocks
 
 
 @asynccontextmanager
 async def lifespan(_app: FastAPI):
     init_db()
     ensure_initial_admin()
+    seed_dynamic_blocks()
     yield
 
 

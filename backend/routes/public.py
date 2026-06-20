@@ -9,8 +9,8 @@ from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from ..database import get_db
-from ..models import BlockField, News, Photo, TickerItem, TileVisibility
-from ..schemas import NewsOut, PhotoOut, PublicOverridesOut
+from ..models import BlockField, DynamicBlock, News, Photo, TickerItem, TileVisibility
+from ..schemas import DynamicBlockOut, NewsOut, PhotoOut, PublicOverridesOut
 
 router = APIRouter(prefix="/api/public", tags=["public"])
 
@@ -28,11 +28,21 @@ def get_overrides(page_key: str, db: Annotated[Session, Depends(get_db)]) -> Pub
 
     ticker = [r.text for r in db.scalars(select(TickerItem).order_by(TickerItem.position, TickerItem.id))]
 
+    blocks = [
+        DynamicBlockOut.model_validate(b)
+        for b in db.scalars(
+            select(DynamicBlock)
+            .where(DynamicBlock.page_key == page_key)
+            .order_by(DynamicBlock.list_id, DynamicBlock.position, DynamicBlock.id)
+        )
+    ]
+
     return PublicOverridesOut(
         page_key=page_key,
         content=content,
         visibility=visibility,
         ticker=ticker,
+        blocks=blocks,
     )
 
 
