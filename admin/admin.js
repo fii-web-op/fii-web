@@ -178,6 +178,7 @@
     .fii-bar .fii-reset{background:#fff;color:#e0344b;}
     .fii-bar .fii-del{background:#e0344b;color:#fff;}
     .fii-bar .fii-toggle{background:#0f1530;color:#fff;}
+    .fii-bar .fii-move{background:#0f1530;color:#fff;font-size:15px;line-height:1;padding:7px 11px;}
     .fii-bar button:hover{filter:brightness(1.08);}
     .fii-add-block{display:flex;align-items:center;justify-content:center;gap:8px;
       flex:0 0 auto;min-width:220px;min-height:90px;align-self:stretch;
@@ -250,12 +251,14 @@
         if (el) startEdit(el);
       });
     }
-    // Tile visibility toolbar (+ delete, for admin-added dynamic blocks)
+    // Tile visibility toolbar (+ reorder & delete, for admin-added dynamic blocks)
     if (!tileBar || tileBar.ownerDocument !== doc) {
       tileBar = doc.createElement('div');
       tileBar.className = 'fii-bar';
       tileBar.innerHTML =
         '<button type="button" class="fii-toggle"></button>' +
+        '<button type="button" class="fii-move fii-up" title="Переместить выше" style="display:none">↑</button>' +
+        '<button type="button" class="fii-move fii-down" title="Переместить ниже" style="display:none">↓</button>' +
         '<button type="button" class="fii-del" style="display:none">🗑 Удалить блок</button>';
       doc.body.appendChild(tileBar);
       tileBar.addEventListener('mouseenter', () => clearTimeout(tileHideTimer));
@@ -263,6 +266,14 @@
       tileBar.querySelector('.fii-toggle').addEventListener('click', (e) => {
         e.preventDefault();
         if (tileBar._tile) toggleTile(tileBar._tile);
+      });
+      tileBar.querySelector('.fii-up').addEventListener('click', (e) => {
+        e.preventDefault();
+        if (tileBar._tile) moveBlock(tileBar._tile, -1);
+      });
+      tileBar.querySelector('.fii-down').addEventListener('click', (e) => {
+        e.preventDefault();
+        if (tileBar._tile) moveBlock(tileBar._tile, 1);
       });
       tileBar.querySelector('.fii-del').addEventListener('click', (e) => {
         e.preventDefault();
@@ -823,11 +834,45 @@
     if (editing) return;
     tileBar._tile = tileEl;
     updateTileBarLabel(tileEl);
-    // Only admin-added (dynamic) blocks can be deleted; static tiles only hide.
-    const delBtn = tileBar.querySelector('.fii-del');
-    if (delBtn) delBtn.style.display = tileEl.dataset.fiiTemplate ? 'inline-flex' : 'none';
+    // Only admin-added (dynamic) blocks can be reordered or deleted; static
+    // tiles can only be hidden. Arrows hide at the ends of the list.
+    const isDyn = !!tileEl.dataset.fiiTemplate;
+    const up = tileBar.querySelector('.fii-up');
+    const down = tileBar.querySelector('.fii-down');
+    tileBar.querySelector('.fii-del').style.display = isDyn ? 'inline-flex' : 'none';
+    if (isDyn && tileEl.parentElement) {
+      const sibs = Array.from(tileEl.parentElement.children).filter((el) => el.dataset.fiiTemplate);
+      const i = sibs.indexOf(tileEl);
+      up.style.display = i > 0 ? 'inline-flex' : 'none';
+      down.style.display = i >= 0 && i < sibs.length - 1 ? 'inline-flex' : 'none';
+    } else {
+      up.style.display = 'none';
+      down.style.display = 'none';
+    }
     tileBar.style.display = 'flex';
     positionTileBar(tileEl);
+  }
+
+  // Reorder a dynamic block within its list and persist sequential positions.
+  async function moveBlock(tileEl, dir) {
+    const container = tileEl.parentElement;
+    if (!container) return;
+    let sibs = Array.from(container.children).filter((el) => el.dataset.fiiTemplate);
+    const idx = sibs.indexOf(tileEl);
+    const target = idx + dir;
+    if (idx < 0 || target < 0 || target >= sibs.length) return;
+    if (dir < 0) container.insertBefore(tileEl, sibs[idx - 1]);
+    else container.insertBefore(sibs[idx + 1], tileEl);
+
+    sibs = Array.from(container.children).filter((el) => el.dataset.fiiTemplate);
+    showTileBar(tileEl); // refresh arrow visibility + position after the move
+    try {
+      await Promise.all(sibs.map((el, i) =>
+        api.updateDynamicBlock(currentPage.key, el.dataset.tile, { position: i + 1 })));
+      showToast('Порядок обновлён ✓');
+    } catch (err) {
+      showToast('Не удалось сохранить порядок: ' + err.message, 3500);
+    }
   }
 
   function positionTileBar(tileEl) {
