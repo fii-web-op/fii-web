@@ -5,9 +5,9 @@ The app exposes three groups of endpoints:
   * /api/public/*  — read-only, called by the public website (no auth)
   * /api/admin/*   — full CRUD, requires Bearer JWT
 
-It also serves uploaded files at /uploads and the admin SPA at /admin
-(on the admin host). The public static site is served separately
-(nginx or Railway frontend) — this app is the admin host.
+It also serves uploaded files at /uploads, the admin SPA at /admin and the
+public static website at the root "/" (index.html, about.html, assets, …) —
+all from the same Railway service.
 
 Run locally:
     pip install -r requirements.txt
@@ -130,17 +130,38 @@ def preview_file(path: str):
     return FileResponse(target)
 
 
-# Admin SPA — served from the same host as the API.
-# The public site lives on a different host and never sees these files.
+# Admin SPA — served from the same host as the API at /admin/*.
+# Entry point is /admin/login.html (there is no shortcut on "/").
 if settings.ADMIN_STATIC_DIR.exists():
     app.mount("/admin", StaticFiles(directory=settings.ADMIN_STATIC_DIR, html=True), name="admin")
-
-    @app.get("/", include_in_schema=False)
-    def admin_root() -> FileResponse:
-        login = settings.ADMIN_STATIC_DIR / "login.html"
-        return FileResponse(login)
 
 
 @app.get("/healthz", include_in_schema=False)
 def healthz() -> dict:
     return {"ok": True}
+
+
+# ---------------------------------------------------------------------------
+# Public website — served at the root "/" from the project root.
+#
+# IMPORTANT: this catch-all mount MUST stay LAST. A StaticFiles mount on "/"
+# matches every path, so it has to be registered after /api/*, /admin,
+# /uploads, /preview, /shared and /healthz — otherwise it would shadow them.
+#
+# backend/ sources, the admin SPA (already served at /admin) and dotfiles
+# (.env, .git, …) are hidden so the catch-all can never leak them.
+# ---------------------------------------------------------------------------
+class PublicSiteStaticFiles(StaticFiles):
+    _BLOCKED_TOP_DIRS = {"backend", "admin"}
+
+    async def get_response(self, path: str, scope):
+        parts = [p for p in path.split("/") if p and p != "."]
+        if parts and (
+            parts[0] in self._BLOCKED_TOP_DIRS
+            or any(p.startswith(".") for p in parts)
+        ):
+            raise HTTPException(status_code=404)
+        return await super().get_response(path, scope)
+
+
+app.mount("/", PublicSiteStaticFiles(directory=settings.PROJECT_ROOT, html=True), name="public")
