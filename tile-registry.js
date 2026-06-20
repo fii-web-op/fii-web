@@ -217,30 +217,6 @@ window.PAGE_REGISTRY = [
         ],
       },
       {
-        id: 'infra-card-1', name: 'Карточка · Современное оборудование',
-        fields: [
-          { id: 'title', label: 'Заголовок', selector: '.infra-card__title', type: 'text', default: 'Современное оборудование' },
-          { id: 'text',  label: 'Текст',     selector: '.infra-card__text',  type: 'multiline',
-            default: 'Факультет оснащён современным техническим оборудованием — передовая база для практической подготовки на уровне индустриальных стандартов.' },
-        ],
-      },
-      {
-        id: 'infra-card-2', name: 'Карточка · Лаборатория ИИ',
-        fields: [
-          { id: 'title', label: 'Заголовок', selector: '.infra-card__title', type: 'text', default: 'Лаборатория искусственного интеллекта' },
-          { id: 'text',  label: 'Текст',     selector: '.infra-card__text',  type: 'multiline',
-            default: 'Открыта лаборатория ИИ, в которой студенты и преподаватели реализуют самые смелые проекты под менторством ведущих разработчиков отрасли.' },
-        ],
-      },
-      {
-        id: 'infra-card-3', name: 'Карточка · Суперкомпьютер РУДН',
-        fields: [
-          { id: 'title', label: 'Заголовок', selector: '.infra-card__title', type: 'text', default: 'Суперкомпьютер РУДН' },
-          { id: 'text',  label: 'Текст',     selector: '.infra-card__text',  type: 'multiline',
-            default: 'Обучающимся предоставляется доступ к суперкомпьютеру РУДН — для расчётов, обучения нейросетей и масштабных научных задач.' },
-        ],
-      },
-      {
         id: 'leadership-section', name: 'Секция «Деканат и лаборатория ИИ» — заголовок',
         fields: [
           { id: 'eyebrow', label: 'Надзаголовок', selector: '.about-section__eyebrow', type: 'text', default: '02 — Руководство' },
@@ -250,62 +226,12 @@ window.PAGE_REGISTRY = [
         ],
       },
       {
-        id: 'leadership-dean', name: 'Руководство · Декан',
-        fields: [
-          { id: 'photo',   label: 'Фотография', selector: '.leadership-card__photo',   type: 'image', default: '' },
-          { id: 'role',    label: 'Должность',  selector: '.leadership-card__role',    type: 'text', default: 'Декан' },
-          { id: 'name',    label: 'ФИО',        selector: '.leadership-card__name',    type: 'text', default: 'Имя Фамилия' },
-          { id: 'caption', label: 'Подпись',    selector: '.leadership-card__caption', type: 'multiline', default: 'Декан факультета искусственного интеллекта.' },
-        ],
-      },
-      {
-        id: 'leadership-vice-dean', name: 'Руководство · Заместитель декана',
-        fields: [
-          { id: 'photo',   label: 'Фотография', selector: '.leadership-card__photo',   type: 'image', default: '' },
-          { id: 'role',    label: 'Должность',  selector: '.leadership-card__role',    type: 'text', default: 'Заместитель декана' },
-          { id: 'name',    label: 'ФИО',        selector: '.leadership-card__name',    type: 'text', default: 'Имя Фамилия' },
-          { id: 'caption', label: 'Подпись',    selector: '.leadership-card__caption', type: 'multiline', default: 'Заместитель декана по учебной работе.' },
-        ],
-      },
-      {
-        id: 'leadership-lab-deputy-1', name: 'Руководство · Зам. лаборатории ИИ (1)',
-        fields: [
-          { id: 'photo',   label: 'Фотография', selector: '.leadership-card__photo',   type: 'image', default: '' },
-          { id: 'role',    label: 'Должность',  selector: '.leadership-card__role',    type: 'text', default: 'Зам. лаборатории ИИ' },
-          { id: 'name',    label: 'ФИО',        selector: '.leadership-card__name',    type: 'text', default: 'Имя Фамилия' },
-          { id: 'caption', label: 'Подпись',    selector: '.leadership-card__caption', type: 'multiline', default: 'Заместитель руководителя лаборатории ИИ.' },
-        ],
-      },
-      {
-        id: 'leadership-lab-deputy-2', name: 'Руководство · Зам. лаборатории ИИ (2)',
-        fields: [
-          { id: 'photo',   label: 'Фотография', selector: '.leadership-card__photo',   type: 'image', default: '' },
-          { id: 'role',    label: 'Должность',  selector: '.leadership-card__role',    type: 'text', default: 'Зам. лаборатории ИИ' },
-          { id: 'name',    label: 'ФИО',        selector: '.leadership-card__name',    type: 'text', default: 'Имя Фамилия' },
-          { id: 'caption', label: 'Подпись',    selector: '.leadership-card__caption', type: 'multiline', default: 'Заместитель руководителя лаборатории ИИ.' },
-        ],
-      },
-      {
         id: 'partners-section', name: 'Секция «Партнёры и практика»',
         fields: [
           { id: 'eyebrow', label: 'Надзаголовок', selector: '.about-section__eyebrow', type: 'text', default: 'Партнёры' },
           { id: 'title',   label: 'Заголовок',    selector: '.about-section__title',   type: 'text', default: 'Партнёры и практика' },
           { id: 'text',    label: 'Описание',     selector: '.partners-text p',        type: 'html',
             default: 'Образовательные программы факультета реализуются совместно с компаниями-партнёрами — <strong>Сбер</strong> и <strong>Альфа-Банк</strong> — IT-гигантами, признанными не только в России. Обучение направлено на развитие конкретных практических навыков в области искусственного интеллекта, необходимых для работы в крупнейших компаниях отрасли.' },
-        ],
-      },
-      {
-        id: 'partner-sber', name: 'Партнёр · Сбер',
-        fields: [
-          { id: 'logo',    label: 'Логотип/Название', selector: '.partner-card__logo',    type: 'text', default: 'Сбер' },
-          { id: 'caption', label: 'Подпись',          selector: '.partner-card__caption', type: 'text', default: 'Технологический партнёр' },
-        ],
-      },
-      {
-        id: 'partner-alfa', name: 'Партнёр · Альфа-Банк',
-        fields: [
-          { id: 'logo',    label: 'Логотип/Название', selector: '.partner-card__logo',    type: 'text', default: 'Альфа-Банк' },
-          { id: 'caption', label: 'Подпись',          selector: '.partner-card__caption', type: 'text', default: 'Технологический партнёр' },
         ],
       },
       {
@@ -323,6 +249,62 @@ window.PAGE_REGISTRY = [
         ],
       },
     ],
+    lists: [
+      { id: 'infra-cards',  container: '.infra-grid',      item: '.infra-card',      template: 'infra-card',      addLabel: 'Добавить карточку' },
+      { id: 'leadership',   container: '.leadership-grid',  item: '.leadership-card', template: 'leadership-card', addLabel: 'Добавить руководителя' },
+      { id: 'partners',     container: '.partners-cards',   item: '.partner-card',    template: 'partner-card',    addLabel: 'Добавить партнёра' },
+    ],
+    templates: {
+      'infra-card': {
+        name: 'Карточка инфраструктуры',
+        html:
+          '<article class="infra-card">' +
+            '<span class="infra-card__index">Раздел</span>' +
+            '<div class="infra-card__icon" aria-hidden="true">' +
+              '<svg viewBox="0 0 24 24"><rect x="2" y="3" width="20" height="14" rx="2" ry="2"/>' +
+              '<line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>' +
+            '</div>' +
+            '<h3 class="infra-card__title">Заголовок</h3>' +
+            '<p class="infra-card__text">Описание…</p>' +
+          '</article>',
+        fields: [
+          { id: 'index', label: 'Надпись сверху', selector: '.infra-card__index', type: 'text', default: 'Раздел' },
+          { id: 'icon',  label: 'Иконка (SVG)',   selector: '.infra-card__icon',  type: 'html', default: '' },
+          { id: 'title', label: 'Заголовок',      selector: '.infra-card__title', type: 'text', default: 'Заголовок' },
+          { id: 'text',  label: 'Текст',          selector: '.infra-card__text',  type: 'multiline', default: 'Описание…' },
+        ],
+      },
+      'leadership-card': {
+        name: 'Карточка руководства',
+        html:
+          '<article class="leadership-card">' +
+            '<div class="leadership-card__photo" aria-hidden="true">' +
+              '<svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4.4 3.6-8 8-8s8 3.6 8 8"/></svg>' +
+            '</div>' +
+            '<span class="leadership-card__role">Должность</span>' +
+            '<h3 class="leadership-card__name">Имя Фамилия</h3>' +
+            '<p class="leadership-card__caption">Подпись…</p>' +
+          '</article>',
+        fields: [
+          { id: 'photo',   label: 'Фотография', selector: '.leadership-card__photo',   type: 'image', default: '' },
+          { id: 'role',    label: 'Должность',  selector: '.leadership-card__role',    type: 'text', default: 'Должность' },
+          { id: 'name',    label: 'ФИО',        selector: '.leadership-card__name',    type: 'text', default: 'Имя Фамилия' },
+          { id: 'caption', label: 'Подпись',    selector: '.leadership-card__caption', type: 'multiline', default: 'Подпись…' },
+        ],
+      },
+      'partner-card': {
+        name: 'Партнёр',
+        html:
+          '<article class="partner-card">' +
+            '<div class="partner-card__logo">Партнёр</div>' +
+            '<div class="partner-card__caption">Технологический партнёр</div>' +
+          '</article>',
+        fields: [
+          { id: 'logo',    label: 'Логотип/Название', selector: '.partner-card__logo',    type: 'text', default: 'Партнёр' },
+          { id: 'caption', label: 'Подпись',          selector: '.partner-card__caption', type: 'text', default: 'Технологический партнёр' },
+        ],
+      },
+    },
   },
   {
     key: 'achievements',
@@ -448,34 +430,6 @@ window.PAGE_REGISTRY = [
             default: 'Проект направлен на создание нового класса генеративных моделей, способных работать одновременно с текстом, изображениями и звуком.' },
         ],
       },
-      { id: 'grant-goal-1', name: 'Цель 1 · Унифицированная архитектура', fields: [
-          { id: 'num',   label: 'Номер',     selector: '.goal-item__num',   type: 'text', default: '01' },
-          { id: 'title', label: 'Заголовок', selector: '.goal-item__title', type: 'text',
-            default: 'Унифицированная мультимодальная архитектура' },
-          { id: 'text',  label: 'Описание',  selector: '.goal-item__text',  type: 'multiline',
-            default: 'Разработка единой архитектуры трансформерного типа, обрабатывающей текст, изображения, аудио и структурированные данные в общем скрытом пространстве без модальностно-специфических энкодеров.' },
-      ]},
-      { id: 'grant-goal-2', name: 'Цель 2 · Обучение при ограниченных данных', fields: [
-          { id: 'num',   label: 'Номер',     selector: '.goal-item__num',   type: 'text', default: '02' },
-          { id: 'title', label: 'Заголовок', selector: '.goal-item__title', type: 'text',
-            default: 'Эффективное обучение при ограниченных данных' },
-          { id: 'text',  label: 'Описание',  selector: '.goal-item__text',  type: 'multiline',
-            default: 'Разработка методов few-shot и zero-shot адаптации мультимодальных моделей для русскоязычного домена, где аннотированных данных значительно меньше, чем в английском.' },
-      ]},
-      { id: 'grant-goal-3', name: 'Цель 3 · Контролируемая генерация', fields: [
-          { id: 'num',   label: 'Номер',     selector: '.goal-item__num',   type: 'text', default: '03' },
-          { id: 'title', label: 'Заголовок', selector: '.goal-item__title', type: 'text',
-            default: 'Контролируемая генерация и выравнивание' },
-          { id: 'text',  label: 'Описание',  selector: '.goal-item__text',  type: 'multiline',
-            default: 'Исследование методов RLHF и Constitutional AI для выравнивания генеративных моделей с предпочтениями пользователей, обеспечения фактической точности и снижения галлюцинаций.' },
-      ]},
-      { id: 'grant-goal-4', name: 'Цель 4 · Интерпретируемость', fields: [
-          { id: 'num',   label: 'Номер',     selector: '.goal-item__num',   type: 'text', default: '04' },
-          { id: 'title', label: 'Заголовок', selector: '.goal-item__title', type: 'text',
-            default: 'Интерпретируемость и безопасность' },
-          { id: 'text',  label: 'Описание',  selector: '.goal-item__text',  type: 'multiline',
-            default: 'Разработка инструментов объяснения решений мультимодальных моделей и методов обнаружения нежелательных или вредоносных паттернов генерации на этапе инференса.' },
-      ]},
       {
         id: 'grant-team-section', name: 'Секция «Команда» — заголовок',
         fields: [
@@ -486,48 +440,6 @@ window.PAGE_REGISTRY = [
             default: 'Восемь специалистов — преподаватели, аспиранты и студенты магистратуры — объединились для работы над проектом.' },
         ],
       },
-      { id: 'grant-team-1', name: 'Команда 1 · Захарова', fields: [
-          { id: 'photo',  label: 'Фотография',     selector: '.team-member__avatar', type: 'image', default: '' },
-          { id: 'avatar', label: 'Инициалы',       selector: '.team-member__avatar', type: 'text', default: 'ЗМ' },
-          { id: 'name',   label: 'ФИО',            selector: '.team-member__name',   type: 'text', default: 'Захарова Мария Дмитриевна' },
-          { id: 'rank',   label: 'Учёная степень', selector: '.team-member__rank',   type: 'text', default: 'PhD, доцент' },
-          { id: 'role',   label: 'Роль в проекте', selector: '.team-member__role',   type: 'text', default: 'Руководитель проекта · генеративные модели' },
-      ]},
-      { id: 'grant-team-2', name: 'Команда 2 · Козлов', fields: [
-          { id: 'photo',  label: 'Фотография',     selector: '.team-member__avatar', type: 'image', default: '' },
-          { id: 'avatar', label: 'Инициалы',       selector: '.team-member__avatar', type: 'text', default: 'КД' },
-          { id: 'name',   label: 'ФИО',            selector: '.team-member__name',   type: 'text', default: 'Козлов Дмитрий Андреевич' },
-          { id: 'rank',   label: 'Учёная степень', selector: '.team-member__rank',   type: 'text', default: 'PhD, доцент' },
-          { id: 'role',   label: 'Роль в проекте', selector: '.team-member__role',   type: 'text', default: 'Со-руководитель · NLP, LLM' },
-      ]},
-      { id: 'grant-team-3', name: 'Команда 3 · Смирнова', fields: [
-          { id: 'photo',  label: 'Фотография',     selector: '.team-member__avatar', type: 'image', default: '' },
-          { id: 'avatar', label: 'Инициалы',       selector: '.team-member__avatar', type: 'text', default: 'СЕ' },
-          { id: 'name',   label: 'ФИО',            selector: '.team-member__name',   type: 'text', default: 'Смирнова Елена Викторовна' },
-          { id: 'rank',   label: 'Учёная степень', selector: '.team-member__rank',   type: 'text', default: 'к.ф.-м.н., доцент' },
-          { id: 'role',   label: 'Роль в проекте', selector: '.team-member__role',   type: 'text', default: 'Ведущий исследователь · компьютерное зрение' },
-      ]},
-      { id: 'grant-team-4', name: 'Команда 4 · Алексеев', fields: [
-          { id: 'photo',  label: 'Фотография',     selector: '.team-member__avatar', type: 'image', default: '' },
-          { id: 'avatar', label: 'Инициалы',       selector: '.team-member__avatar', type: 'text', default: 'АР' },
-          { id: 'name',   label: 'ФИО',            selector: '.team-member__name',   type: 'text', default: 'Алексеев Роман Игоревич' },
-          { id: 'rank',   label: 'Учёная степень', selector: '.team-member__rank',   type: 'text', default: 'аспирант' },
-          { id: 'role',   label: 'Роль в проекте', selector: '.team-member__role',   type: 'text', default: 'Разработка диффузионных архитектур' },
-      ]},
-      { id: 'grant-team-5', name: 'Команда 5 · Тихонова', fields: [
-          { id: 'photo',  label: 'Фотография',     selector: '.team-member__avatar', type: 'image', default: '' },
-          { id: 'avatar', label: 'Инициалы',       selector: '.team-member__avatar', type: 'text', default: 'ТА' },
-          { id: 'name',   label: 'ФИО',            selector: '.team-member__name',   type: 'text', default: 'Тихонова Анна Сергеевна' },
-          { id: 'rank',   label: 'Учёная степень', selector: '.team-member__rank',   type: 'text', default: 'аспирант' },
-          { id: 'role',   label: 'Роль в проекте', selector: '.team-member__role',   type: 'text', default: 'Выравнивание моделей, RLHF' },
-      ]},
-      { id: 'grant-team-6', name: 'Команда 6 · Михайлов', fields: [
-          { id: 'photo',  label: 'Фотография',     selector: '.team-member__avatar', type: 'image', default: '' },
-          { id: 'avatar', label: 'Инициалы',       selector: '.team-member__avatar', type: 'text', default: 'МВ' },
-          { id: 'name',   label: 'ФИО',            selector: '.team-member__name',   type: 'text', default: 'Михайлов Вадим Олегович' },
-          { id: 'rank',   label: 'Учёная степень', selector: '.team-member__rank',   type: 'text', default: 'магистрант 2 курса' },
-          { id: 'role',   label: 'Роль в проекте', selector: '.team-member__role',   type: 'text', default: 'Интерпретируемость · аудиомодальность' },
-      ]},
       {
         id: 'grant-milestones-section', name: 'Секция «План» — заголовок',
         fields: [
@@ -538,27 +450,6 @@ window.PAGE_REGISTRY = [
             default: 'Трёхлетняя программа разбита на последовательные этапы с публикацией промежуточных результатов на ведущих конференциях.' },
         ],
       },
-      { id: 'grant-milestone-1', name: 'Этап 2024 · Базовая архитектура', fields: [
-          { id: 'year',  label: 'Год',      selector: '.milestone__year',  type: 'text', default: '2024' },
-          { id: 'title', label: 'Название', selector: '.milestone__title', type: 'text',
-            default: 'Базовая архитектура и датасеты' },
-          { id: 'desc',  label: 'Описание', selector: '.milestone__desc',  type: 'multiline',
-            default: 'Проектирование унифицированной архитектуры, сбор и разметка русскоязычного мультимодального датасета объёмом 2 млн пар. Первая публикация на AIST 2024.' },
-      ]},
-      { id: 'grant-milestone-2', name: 'Этап 2025 · Предобучение', fields: [
-          { id: 'year',  label: 'Год',      selector: '.milestone__year',  type: 'text', default: '2025' },
-          { id: 'title', label: 'Название', selector: '.milestone__title', type: 'text',
-            default: 'Предобучение и выравнивание' },
-          { id: 'desc',  label: 'Описание', selector: '.milestone__desc',  type: 'multiline',
-            default: 'Предобучение модели на кластере РУДН, fine-tuning с использованием RLHF. Публикации на NeurIPS 2025 и ACL 2025.' },
-      ]},
-      { id: 'grant-milestone-3', name: 'Этап 2026 · Открытый выпуск', fields: [
-          { id: 'year',  label: 'Год',      selector: '.milestone__year',  type: 'text', default: '2026' },
-          { id: 'title', label: 'Название', selector: '.milestone__title', type: 'text',
-            default: 'Открытый выпуск и внедрение' },
-          { id: 'desc',  label: 'Описание', selector: '.milestone__desc',  type: 'multiline',
-            default: 'Публикация модели в открытом доступе под лицензией Apache 2.0. Демонстрация применения в медицинской диагностике. Итоговый отчёт в РНФ.' },
-      ]},
       {
         id: 'grant-cta', name: 'CTA «Сотрудничество»',
         fields: [
@@ -572,6 +463,65 @@ window.PAGE_REGISTRY = [
         ],
       },
     ],
+    lists: [
+      { id: 'goals',      container: '.goals-list', item: '.goal-item',     template: 'goal-item',   addLabel: 'Добавить цель' },
+      { id: 'team',       container: '.team-grid',  item: '.team-member',   template: 'team-member', addLabel: 'Добавить участника' },
+      { id: 'milestones', container: '.milestones', item: '.milestone',     template: 'milestone',   addLabel: 'Добавить этап' },
+    ],
+    templates: {
+      'goal-item': {
+        name: 'Цель проекта',
+        html:
+          '<li class="goal-item">' +
+            '<span class="goal-item__num">00</span>' +
+            '<div class="goal-item__body">' +
+              '<h3 class="goal-item__title">Заголовок цели</h3>' +
+              '<p class="goal-item__text">Описание цели…</p>' +
+            '</div>' +
+          '</li>',
+        fields: [
+          { id: 'num',   label: 'Номер',     selector: '.goal-item__num',   type: 'text', default: '00' },
+          { id: 'title', label: 'Заголовок', selector: '.goal-item__title', type: 'text', default: 'Заголовок цели' },
+          { id: 'text',  label: 'Описание',  selector: '.goal-item__text',  type: 'multiline', default: 'Описание цели…' },
+        ],
+      },
+      'team-member': {
+        name: 'Участник команды',
+        html:
+          '<div class="team-member">' +
+            '<div class="team-member__avatar">НН</div>' +
+            '<div>' +
+              '<div class="team-member__name">Имя Фамилия</div>' +
+              '<div class="team-member__rank">Учёная степень</div>' +
+              '<p class="team-member__role">Роль в проекте</p>' +
+            '</div>' +
+          '</div>',
+        fields: [
+          { id: 'photo',  label: 'Фотография',     selector: '.team-member__avatar', type: 'image', default: '' },
+          { id: 'avatar', label: 'Инициалы',       selector: '.team-member__avatar', type: 'text',  default: 'НН' },
+          { id: 'name',   label: 'ФИО',            selector: '.team-member__name',   type: 'text',  default: 'Имя Фамилия' },
+          { id: 'rank',   label: 'Учёная степень', selector: '.team-member__rank',   type: 'text',  default: 'Учёная степень' },
+          { id: 'role',   label: 'Роль в проекте', selector: '.team-member__role',   type: 'text',  default: 'Роль в проекте' },
+        ],
+      },
+      'milestone': {
+        name: 'Этап плана',
+        html:
+          '<div class="milestone">' +
+            '<span class="milestone__year">2025</span>' +
+            '<div class="milestone__dot"></div>' +
+            '<div class="milestone__content">' +
+              '<div class="milestone__title">Название этапа</div>' +
+              '<p class="milestone__desc">Описание этапа…</p>' +
+            '</div>' +
+          '</div>',
+        fields: [
+          { id: 'year',  label: 'Год',      selector: '.milestone__year',  type: 'text', default: '2025' },
+          { id: 'title', label: 'Название', selector: '.milestone__title', type: 'text', default: 'Название этапа' },
+          { id: 'desc',  label: 'Описание', selector: '.milestone__desc',  type: 'multiline', default: 'Описание этапа…' },
+        ],
+      },
+    },
   },
 
   // ---- ОБЩИЕ ЭЛЕМЕНТЫ (на всех страницах) ----
