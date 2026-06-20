@@ -462,14 +462,44 @@ window.PAGE_REGISTRY = [
     file: 'reviews.html',
     tiles: [
       {
-        id: 'stub-content', name: 'Основной контент страницы',
+        id: 'reviews-section', name: 'Секция «Отзывы» — заголовок',
         fields: [
-          { id: 'title',    label: 'Заголовок',    selector: '.section__title',    type: 'text', default: 'Отзывы' },
-          { id: 'subtitle', label: 'Подзаголовок', selector: '.section__subtitle', type: 'text', default: 'Страница находится в разработке' },
-          { id: 'btn',      label: 'Кнопка',       selector: '.btn',               type: 'text', default: 'Назад на главную' },
+          { id: 'eyebrow',  label: 'Надзаголовок', selector: '.section__eyebrow',  type: 'text',
+            default: 'Голоса студентов и выпускников' },
+          { id: 'title',    label: 'Заголовок',    selector: '.section__title',    type: 'text', default: 'Отзывы.' },
+          { id: 'subtitle', label: 'Подзаголовок', selector: '.section__subtitle', type: 'multiline',
+            default: 'Студенты, выпускники и преподаватели рассказывают, как устроена учебная и научная жизнь факультета.' },
         ],
       },
     ],
+    // Repeatable, admin-managed blocks. Each list points at a container in the
+    // page and a template to clone; instances live in the DB (dynamic_blocks).
+    lists: [
+      { id: 'reviews-grid', container: '.reviews__grid', template: 'review-card', addLabel: 'Добавить отзыв' },
+    ],
+    templates: {
+      'review-card': {
+        name: 'Отзыв',
+        html:
+          '<figure class="review">' +
+            '<blockquote class="review__text">Текст отзыва…</blockquote>' +
+            '<figcaption class="review__header">' +
+              '<span class="review__avatar">НН</span>' +
+              '<div>' +
+                '<div class="review__name">Имя Фамилия</div>' +
+                '<div class="review__role">Студент</div>' +
+              '</div>' +
+            '</figcaption>' +
+          '</figure>',
+        fields: [
+          { id: 'text',   label: 'Текст отзыва', selector: '.review__text',   type: 'multiline', default: 'Текст отзыва…' },
+          { id: 'avatar', label: 'Инициалы',     selector: '.review__avatar', type: 'text',  default: 'НН' },
+          { id: 'photo',  label: 'Фотография',   selector: '.review__avatar', type: 'image', default: '' },
+          { id: 'name',   label: 'Имя',          selector: '.review__name',   type: 'text',  default: 'Имя Фамилия' },
+          { id: 'role',   label: 'Роль',         selector: '.review__role',   type: 'text',  default: 'Студент' },
+        ],
+      },
+    },
   },
   {
     key: 'admission',

@@ -18,7 +18,7 @@ from fastapi import (
     UploadFile,
     status,
 )
-from sqlalchemy import delete, select
+from sqlalchemy import delete, func, select
 from sqlalchemy.dialects.postgresql import insert as pg_insert
 from sqlalchemy.dialects.sqlite import insert as sqlite_insert
 from sqlalchemy.orm import Session
@@ -26,10 +26,13 @@ from sqlalchemy.orm import Session
 from ..auth import get_current_user
 from ..config import get_settings
 from ..database import engine, get_db
-from ..models import BlockField, News, Photo, TickerItem, TileVisibility, User
+from ..models import BlockField, DynamicBlock, News, Photo, TickerItem, TileVisibility, User
 from ..schemas import (
     BlockFieldIn,
     BlockFieldOut,
+    DynamicBlockCreateIn,
+    DynamicBlockOut,
+    DynamicBlockUpdateIn,
     NewsOut,
     NewsStatus,
     PhotoOut,
@@ -124,6 +127,101 @@ def delete_block(
 def reset_all_blocks(db: Annotated[Session, Depends(get_db)]) -> Response:
     db.execute(delete(BlockField))
     db.execute(delete(TileVisibility))
+    db.execute(delete(DynamicBlock))
+    db.commit()
+    return Response(status_code=status.HTTP_204_NO_CONTENT)
+
+
+# ---------- Dynamic blocks (admin-added repeatable items) -----------------
+
+@router.get("/blocks/dynamic", response_model=list[DynamicBlockOut])
+def list_dynamic_blocks(db: Annotated[Session, Depends(get_db)]) -> list[DynamicBlock]:
+    return list(
+        db.scalars(
+            select(DynamicBlock).order_by(
+                DynamicBlock.page_key, DynamicBlock.list_id, DynamicBlock.position, DynamicBlock.id,
+            )
+        )
+    )
+
+
+@router.post("/blocks/dynamic", response_model=DynamicBlockOut, status_code=status.HTTP_201_CREATED)
+def create_dynamic_block(
+    payload: DynamicBlockCreateIn, db: Annotated[Session, Depends(get_db)],
+) -> DynamicBlock:
+    position = payload.position
+    if position is None:
+        current_max = db.scalar(
+            select(func.max(DynamicBlock.position)).where(
+                DynamicBlock.page_key == payload.page_key,
+                DynamicBlock.list_id == payload.list_id,
+            )
+        )
+        position = (current_max or 0) + 1
+
+    tile_id = f"{payload.template_id}-{uuid.uuid4().hex[:8]}"
+    block = DynamicBlock(
+        page_key=payload.page_key,
+        list_id=payload.list_id,
+        tile_id=tile_id,
+        template_id=payload.template_id,
+        position=position,
+    )
+    db.add(block)
+    # Seed the initial field values (typically the template defaults) so the new
+    # block has content before the admin edits it.
+    for field_id, value in payload.fields.items():
+        db.add(BlockField(
+            page_key=payload.page_key, tile_id=tile_id, field_id=field_id, value=value,
+        ))
+    db.commit()
+    db.refresh(block)
+    return block
+
+
+@router.patch("/blocks/dynamic/{tile_id}", response_model=DynamicBlockOut)
+def update_dynamic_block(
+    tile_id: str,
+    page_key: str,
+    payload: DynamicBlockUpdateIn,
+    db: Annotated[Session, Depends(get_db)],
+) -> DynamicBlock:
+    block = db.scalar(
+        select(DynamicBlock).where(
+            DynamicBlock.page_key == page_key, DynamicBlock.tile_id == tile_id,
+        )
+    )
+    if not block:
+        raise HTTPException(404, "Блок не найден")
+    if payload.position is not None:
+        block.position = payload.position
+    db.commit()
+    db.refresh(block)
+    return block
+
+
+@router.delete(
+    "/blocks/dynamic/{tile_id}", status_code=status.HTTP_204_NO_CONTENT, response_class=Response,
+)
+def delete_dynamic_block(
+    tile_id: str, page_key: str, db: Annotated[Session, Depends(get_db)],
+) -> Response:
+    db.execute(
+        delete(DynamicBlock).where(
+            DynamicBlock.page_key == page_key, DynamicBlock.tile_id == tile_id,
+        )
+    )
+    # Drop the block's content and visibility flag along with it.
+    db.execute(
+        delete(BlockField).where(
+            BlockField.page_key == page_key, BlockField.tile_id == tile_id,
+        )
+    )
+    db.execute(
+        delete(TileVisibility).where(
+            TileVisibility.page_key == page_key, TileVisibility.tile_id == tile_id,
+        )
+    )
     db.commit()
     return Response(status_code=status.HTTP_204_NO_CONTENT)
 

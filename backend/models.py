@@ -55,6 +55,32 @@ class TileVisibility(Base):
     )
 
 
+class DynamicBlock(Base):
+    """An admin-added, repeatable block instance placed into a page list/slot.
+
+    The block's editable text/image values live in :class:`BlockField` keyed by
+    the same ``(page_key, tile_id)``; its visibility reuses :class:`TileVisibility`.
+    This table only records that the block exists, which list/slot it belongs to,
+    which registry template renders it, and its order within the list.
+    """
+
+    __tablename__ = "dynamic_blocks"
+    __table_args__ = (
+        UniqueConstraint("page_key", "tile_id", name="uq_dynamic_block"),
+    )
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    page_key:    Mapped[str] = mapped_column(String(64), nullable=False, index=True)
+    list_id:     Mapped[str] = mapped_column(String(128), nullable=False)
+    tile_id:     Mapped[str] = mapped_column(String(128), nullable=False)
+    template_id: Mapped[str] = mapped_column(String(128), nullable=False)
+    position:    Mapped[int] = mapped_column(Integer, default=0, nullable=False, index=True)
+    created_at: Mapped[datetime] = mapped_column(DateTime, server_default=func.now(), nullable=False)
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime, server_default=func.now(), onupdate=func.now(), nullable=False,
+    )
+
+
 class TickerItem(Base):
     __tablename__ = "ticker_items"
 

@@ -165,12 +165,58 @@ document.querySelectorAll('.cards, .cards--programs, .reviews__grid').forEach((g
     return map;
   }
 
+  // Build a map: template_id -> field_id -> { selector, type }. Dynamic blocks
+  // share their field descriptors via the page's templates, keyed by template.
+  function buildTemplateFieldMap(pageDef) {
+    const map = {};
+    const templates = (pageDef && pageDef.templates) || {};
+    Object.keys(templates).forEach(tid => {
+      map[tid] = {};
+      (templates[tid].fields || []).forEach(f => {
+        map[tid][f.id] = { selector: f.selector, type: f.type };
+      });
+    });
+    return map;
+  }
+
+  function renderTemplateEl(html) {
+    const wrap = document.createElement('div');
+    wrap.innerHTML = (html || '').trim();
+    return wrap.firstElementChild;
+  }
+
+  // Replace a list container's children with the admin-managed blocks from the
+  // DB. When a list has no blocks (not migrated, or API offline) the page's
+  // static markup is left untouched as a fallback.
+  function renderDynamicBlocks(pageDef, blocks) {
+    if (!pageDef || !Array.isArray(pageDef.lists) || !Array.isArray(blocks) || !blocks.length) return;
+    pageDef.lists.forEach(list => {
+      const container = document.querySelector(list.container);
+      if (!container) return;
+      const items = blocks
+        .filter(b => b.list_id === list.id)
+        .sort((a, b) => a.position - b.position);
+      if (!items.length) return;
+      container.innerHTML = '';
+      items.forEach(b => {
+        const templateId = b.template_id || list.template;
+        const tmpl = (pageDef.templates || {})[templateId];
+        const el = tmpl && renderTemplateEl(tmpl.html);
+        if (!el) return;
+        el.dataset.tile = b.tile_id;
+        el.dataset.fiiTemplate = templateId;
+        container.appendChild(el);
+      });
+    });
+  }
+
   // Merge a page payload with the shared (global) payload. Page-level keys win
   // on the (unexpected) chance of a collision.
   function mergePayload(page, shared) {
     return {
       content:    { ...(shared.content || {}),    ...(page.content || {}) },
       visibility: { ...(shared.visibility || {}), ...(page.visibility || {}) },
+      blocks:     page.blocks || [],
     };
   }
 
@@ -183,9 +229,15 @@ document.querySelectorAll('.cards, .cards--programs, .reviews__grid').forEach((g
     const registry = window.PAGE_REGISTRY || [];
     const pageDef = registry.find(p => p.key === pageKey);
     const sharedDef = registry.find(p => p.key === SHARED_KEY);
+
+    // Materialise admin-added blocks before the apply loop runs, so the freshly
+    // inserted [data-tile] elements receive their content/visibility below.
+    renderDynamicBlocks(pageDef, payload.blocks || []);
+
     // Include both the current page's tiles and the global/shared tiles so the
     // footer (present on every page) is recognised and overridden everywhere.
     const fieldMap = { ...buildFieldMap(pageDef), ...buildFieldMap(sharedDef) };
+    const templateFieldMap = buildTemplateFieldMap(pageDef);
 
     const visibility = payload.visibility || {};
     const content    = payload.content || {};
@@ -204,9 +256,12 @@ document.querySelectorAll('.cards, .cards--programs, .reviews__grid').forEach((g
         tileEl.removeAttribute('data-fii-hidden');
       }
       const overrides = content[tileId];
-      if (!overrides || !fieldMap[tileId]) return;
+      // Static tiles look up their fields by tile_id; dynamic blocks share field
+      // descriptors via their template (stamped as data-fii-template).
+      const descriptors = fieldMap[tileId] || templateFieldMap[tileEl.dataset.fiiTemplate];
+      if (!overrides || !descriptors) return;
       Object.entries(overrides).forEach(([fieldId, value]) => {
-        const descriptor = fieldMap[tileId][fieldId];
+        const descriptor = descriptors[fieldId];
         if (!descriptor) return;
         const target = tileEl.querySelector(descriptor.selector);
         if (!target) return;

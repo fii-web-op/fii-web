@@ -74,6 +74,14 @@
   const deleteField  = (p, t, f)  => request(`/api/admin/blocks?page_key=${encodeURIComponent(p)}&tile_id=${encodeURIComponent(t)}&field_id=${encodeURIComponent(f)}`, { method: 'DELETE' });
   const resetAll     = ()         => request('/api/admin/blocks/all', { method: 'DELETE' });
 
+  // Dynamic blocks (admin-added, repeatable items inside a page list)
+  const listDynamicBlocks  = ()      => request('/api/admin/blocks/dynamic');
+  const createDynamicBlock = (b)     => request('/api/admin/blocks/dynamic', { method: 'POST', body: b });
+  const updateDynamicBlock = (p, t, b) =>
+    request(`/api/admin/blocks/dynamic/${encodeURIComponent(t)}?page_key=${encodeURIComponent(p)}`, { method: 'PATCH', body: b });
+  const deleteDynamicBlock = (p, t)  =>
+    request(`/api/admin/blocks/dynamic/${encodeURIComponent(t)}?page_key=${encodeURIComponent(p)}`, { method: 'DELETE' });
+
   // Visibility
   const listVisibility = ()       => request('/api/admin/visibility');
   const setVisibility  = (v)      => request('/api/admin/visibility', { method: 'PUT', body: v });
@@ -109,6 +117,7 @@
     getToken, setToken, clearToken,
     login, logout, me,
     listBlocks, saveBlock, deleteTile, deleteField, resetAll,
+    listDynamicBlocks, createDynamicBlock, updateDynamicBlock, deleteDynamicBlock,
     listVisibility, setVisibility,
     getTicker, replaceTicker,
     listNews, createNews, deleteNews,
