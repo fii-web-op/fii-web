@@ -30,6 +30,7 @@ from ..models import BlockField, DynamicBlock, News, Photo, TickerItem, TileVisi
 from ..schemas import (
     BlockFieldIn,
     BlockFieldOut,
+    DynamicBlockBulkIn,
     DynamicBlockCreateIn,
     DynamicBlockOut,
     DynamicBlockUpdateIn,
@@ -177,6 +178,48 @@ def create_dynamic_block(
     db.commit()
     db.refresh(block)
     return block
+
+
+@router.post(
+    "/blocks/dynamic/bulk", response_model=list[DynamicBlockOut], status_code=status.HTTP_201_CREATED,
+)
+def bulk_create_dynamic_blocks(
+    payload: DynamicBlockBulkIn, db: Annotated[Session, Depends(get_db)],
+) -> list[DynamicBlock]:
+    """Adopt a list's existing static items as managed blocks.
+
+    Refuses (409) if the list already has blocks, so calling it again — e.g. from
+    a second admin tab — can't duplicate the page's content.
+    """
+    existing = db.scalar(
+        select(DynamicBlock).where(
+            DynamicBlock.page_key == payload.page_key,
+            DynamicBlock.list_id == payload.list_id,
+        ).limit(1)
+    )
+    if existing:
+        raise HTTPException(409, "Список уже переведён в управляемый")
+
+    created: list[DynamicBlock] = []
+    for i, item in enumerate(payload.items, start=1):
+        tile_id = f"{payload.template_id}-{uuid.uuid4().hex[:8]}"
+        block = DynamicBlock(
+            page_key=payload.page_key,
+            list_id=payload.list_id,
+            tile_id=tile_id,
+            template_id=payload.template_id,
+            position=i,
+        )
+        db.add(block)
+        for field_id, value in item.fields.items():
+            db.add(BlockField(
+                page_key=payload.page_key, tile_id=tile_id, field_id=field_id, value=value,
+            ))
+        created.append(block)
+    db.commit()
+    for b in created:
+        db.refresh(b)
+    return created
 
 
 @router.patch("/blocks/dynamic/{tile_id}", response_model=DynamicBlockOut)

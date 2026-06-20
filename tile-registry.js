@@ -38,76 +38,10 @@ window.PAGE_REGISTRY = [
         ],
       },
       {
-        id: 'about-card-1', name: 'Карточка · 10+ лабораторий',
-        fields: [
-          { id: 'icon',   label: 'Иконка (эмодзи)', selector: '.card__icon',   type: 'text', default: '🔬' },
-          { id: 'number', label: 'Число',           selector: '.card__number', type: 'text', default: '10+' },
-          { id: 'text',   label: 'Подпись',         selector: '.card__text',   type: 'multiline',
-            default: 'Лабораторий с оборудованием мирового уровня' },
-        ],
-      },
-      {
-        id: 'about-card-2', name: 'Карточка · Стажировки с 1 курса',
-        fields: [
-          { id: 'icon',   label: 'Иконка (эмодзи)', selector: '.card__icon',   type: 'text', default: '🚀' },
-          { id: 'number', label: 'Число',           selector: '.card__number', type: 'text', default: '1 курс' },
-          { id: 'text',   label: 'Подпись',         selector: '.card__text',   type: 'multiline',
-            default: 'Стажировки в IT-компаниях уже с первого курса' },
-        ],
-      },
-      {
-        id: 'about-card-3', name: 'Карточка · 95% трудоустройства',
-        fields: [
-          { id: 'icon',   label: 'Иконка (эмодзи)', selector: '.card__icon',   type: 'text', default: '🏆' },
-          { id: 'number', label: 'Число',           selector: '.card__number', type: 'text', default: '95%' },
-          { id: 'text',   label: 'Подпись',         selector: '.card__text',   type: 'multiline',
-            default: 'Выпускников трудоустраиваются в первый год' },
-        ],
-      },
-      {
-        id: 'about-card-4', name: 'Карточка · 50+ проектов',
-        fields: [
-          { id: 'icon',   label: 'Иконка (эмодзи)', selector: '.card__icon',   type: 'text', default: '🤖' },
-          { id: 'number', label: 'Число',           selector: '.card__number', type: 'text', default: '50+' },
-          { id: 'text',   label: 'Подпись',         selector: '.card__text',   type: 'multiline',
-            default: 'Проектов с реальными заказчиками ежегодно' },
-        ],
-      },
-      {
         id: 'programs-section', name: 'Секция «Программы обучения» (целиком)',
         fields: [
           { id: 'title',    label: 'Заголовок',    selector: '.section__title',    type: 'text', default: 'Программы обучения' },
           { id: 'subtitle', label: 'Подзаголовок', selector: '.section__subtitle', type: 'text', default: 'Выбери свой путь в мире ИИ' },
-        ],
-      },
-      {
-        id: 'program-1', name: 'Программа · ИИ и машинное обучение',
-        fields: [
-          { id: 'badge',   label: 'Бейдж',    selector: '.card__badge',   type: 'text', default: 'Бакалавриат' },
-          { id: 'heading', label: 'Название', selector: '.card__heading', type: 'text', default: 'Искусственный интеллект и машинное обучение' },
-          { id: 'desc',    label: 'Описание', selector: '.card__desc',    type: 'multiline',
-            default: '4 года обучения. Python, нейросети, компьютерное зрение, NLP и работа с большими данными.' },
-          { id: 'btn',     label: 'Кнопка',   selector: '.btn--primary',  type: 'text', default: 'Подробнее' },
-        ],
-      },
-      {
-        id: 'program-2', name: 'Программа · Робототехника',
-        fields: [
-          { id: 'badge',   label: 'Бейдж',    selector: '.card__badge',   type: 'text', default: 'Бакалавриат' },
-          { id: 'heading', label: 'Название', selector: '.card__heading', type: 'text', default: 'Робототехника и интеллектуальные системы' },
-          { id: 'desc',    label: 'Описание', selector: '.card__desc',    type: 'multiline',
-            default: '4 года обучения. Автономные системы, сенсоры, управление роботами и встраиваемый ИИ.' },
-          { id: 'btn',     label: 'Кнопка',   selector: '.btn--primary',  type: 'text', default: 'Подробнее' },
-        ],
-      },
-      {
-        id: 'program-3', name: 'Программа · Генеративный ИИ (магистратура)',
-        fields: [
-          { id: 'badge',   label: 'Бейдж',    selector: '.card__badge',   type: 'text', default: 'Магистратура' },
-          { id: 'heading', label: 'Название', selector: '.card__heading', type: 'text', default: 'Генеративный ИИ и большие языковые модели' },
-          { id: 'desc',    label: 'Описание', selector: '.card__desc',    type: 'multiline',
-            default: '2 года обучения. Архитектуры трансформеров, RLHF, деплой моделей и этика ИИ.' },
-          { id: 'btn',     label: 'Кнопка',   selector: '.btn--primary',  type: 'text', default: 'Подробнее' },
         ],
       },
       {
@@ -170,63 +104,6 @@ window.PAGE_REGISTRY = [
             default: 'Научные премии, победы в соревнованиях и признание индустрии — результат совместной работы студентов и преподавателей.' },
         ],
       },
-      { id: 'achieve-card-1', name: 'Достижение 1 · Олимпиада', fields: [
-          { id: 'tag',   label: 'Категория', selector: '.achieve-card__tag',   type: 'text', default: 'Олимпиада' },
-          { id: 'year',  label: 'Год',       selector: '.achieve-card__year',  type: 'text', default: '2025' },
-          { id: 'title', label: 'Заголовок', selector: '.achieve-card__title', type: 'text',
-            default: '1 место на Всероссийской олимпиаде по ИИ' },
-          { id: 'desc',  label: 'Описание',  selector: '.achieve-card__desc',  type: 'multiline',
-            default: 'Команда факультета заняла первое место среди 47 вузов страны в категории «Машинное обучение».' },
-      ]},
-      { id: 'achieve-card-2', name: 'Достижение 2 · Публикация', fields: [
-          { id: 'tag',   label: 'Категория', selector: '.achieve-card__tag',   type: 'text', default: 'Публикация' },
-          { id: 'year',  label: 'Год',       selector: '.achieve-card__year',  type: 'text', default: '2025' },
-          { id: 'title', label: 'Заголовок', selector: '.achieve-card__title', type: 'text',
-            default: 'Статья в Nature Machine Intelligence' },
-          { id: 'desc',  label: 'Описание',  selector: '.achieve-card__desc',  type: 'multiline',
-            default: 'Исследование по интерпретируемости нейронных сетей принято в один из ведущих журналов мира.' },
-      ]},
-      { id: 'achieve-card-3', name: 'Достижение 3 · Хакатон', fields: [
-          { id: 'tag',   label: 'Категория', selector: '.achieve-card__tag',   type: 'text', default: 'Хакатон' },
-          { id: 'year',  label: 'Год',       selector: '.achieve-card__year',  type: 'text', default: '2025' },
-          { id: 'title', label: 'Заголовок', selector: '.achieve-card__title', type: 'text',
-            default: 'Победа на международном HackAI' },
-          { id: 'desc',  label: 'Описание',  selector: '.achieve-card__desc',  type: 'multiline',
-            default: 'Студенческая команда обошла участников из 23 стран с решением для медицинской диагностики на основе CV.' },
-      ]},
-      { id: 'achieve-card-4', name: 'Достижение 4 · Рейтинг', fields: [
-          { id: 'tag',   label: 'Категория', selector: '.achieve-card__tag',   type: 'text', default: 'Рейтинг' },
-          { id: 'year',  label: 'Год',       selector: '.achieve-card__year',  type: 'text', default: '2025' },
-          { id: 'title', label: 'Заголовок', selector: '.achieve-card__title', type: 'text',
-            default: 'ТОП-3 по направлению ИИ в России' },
-          { id: 'desc',  label: 'Описание',  selector: '.achieve-card__desc',  type: 'multiline',
-            default: 'Факультет вошёл в тройку лучших по подготовке специалистов в области искусственного интеллекта по версии Эксперт РА.' },
-      ]},
-      { id: 'achieve-card-5', name: 'Достижение 5 · Грант', fields: [
-          { id: 'tag',   label: 'Категория', selector: '.achieve-card__tag',   type: 'text', default: 'Грант' },
-          { id: 'year',  label: 'Год',       selector: '.achieve-card__year',  type: 'text', default: '2024' },
-          { id: 'title', label: 'Заголовок', selector: '.achieve-card__title', type: 'text',
-            default: 'Грант РНФ на 12 млн рублей' },
-          { id: 'desc',  label: 'Описание',  selector: '.achieve-card__desc',  type: 'multiline',
-            default: 'Научная группа получила финансирование на трёхлетнее исследование в области генеративных мультимодальных моделей.' },
-      ]},
-      { id: 'achieve-card-6', name: 'Достижение 6 · Партнёрство', fields: [
-          { id: 'tag',   label: 'Категория', selector: '.achieve-card__tag',   type: 'text', default: 'Партнёрство' },
-          { id: 'year',  label: 'Год',       selector: '.achieve-card__year',  type: 'text', default: '2024' },
-          { id: 'title', label: 'Заголовок', selector: '.achieve-card__title', type: 'text',
-            default: 'Стратегическое соглашение со Сбером' },
-          { id: 'desc',  label: 'Описание',  selector: '.achieve-card__desc',  type: 'multiline',
-            default: 'Подписано соглашение о целевой подготовке студентов и совместных R&D-проектах в области FinTech AI.' },
-      ]},
-      { id: 'achieve-card-7', name: 'Достижение 7 · Стартап', fields: [
-          { id: 'tag',   label: 'Категория', selector: '.achieve-card__tag',   type: 'text', default: 'Стартап' },
-          { id: 'year',  label: 'Год',       selector: '.achieve-card__year',  type: 'text', default: '2024' },
-          { id: 'title', label: 'Заголовок', selector: '.achieve-card__title', type: 'text',
-            default: 'Выпускник основал стартап MedAI' },
-          { id: 'desc',  label: 'Описание',  selector: '.achieve-card__desc',  type: 'multiline',
-            default: 'Компания привлекла $2 млн инвестиций для разработки ИИ-ассистента для врачей первичного звена.' },
-      ]},
-
       // ---- ПРЕПОДАВАТЕЛИ (КАРУСЕЛЬ) ----
       {
         id: 'teachers-carousel', name: 'Секция «Преподаватели» — заголовок',
@@ -237,61 +114,82 @@ window.PAGE_REGISTRY = [
             default: 'Каждый преподаватель — действующий исследователь с публикациями, грантами и опытом работы в индустрии.' },
         ],
       },
-      { id: 'teacher-card-1', name: 'Преподаватель 1 · Иванов', fields: [
-          { id: 'avatar', label: 'Инициалы',      selector: '.teacher-card__avatar', type: 'text', default: 'АИ' },
-          { id: 'photo',  label: 'Фотография',    selector: '.teacher-card__avatar', type: 'image', default: '' },
-          { id: 'name',   label: 'ФИО',           selector: '.teacher-card__name',   type: 'text', default: 'Иванов Алексей Петрович' },
-          { id: 'rank',   label: 'Учёная степень', selector: '.teacher-card__rank',  type: 'text', default: 'д.т.н., профессор' },
-          { id: 'role',   label: 'Должность',     selector: '.teacher-card__role',   type: 'text', default: 'Заведующий кафедрой машинного обучения' },
-          { id: 'bio',    label: 'Биография',     selector: '.teacher-card__bio',    type: 'multiline',
-            default: '20 лет в академической науке. Автор 80+ публикаций, лауреат премии Правительства РФ в области образования.' },
-      ]},
-      { id: 'teacher-card-2', name: 'Преподаватель 2 · Смирнова', fields: [
-          { id: 'avatar', label: 'Инициалы',      selector: '.teacher-card__avatar', type: 'text', default: 'СЕ' },
-          { id: 'photo',  label: 'Фотография',    selector: '.teacher-card__avatar', type: 'image', default: '' },
-          { id: 'name',   label: 'ФИО',           selector: '.teacher-card__name',   type: 'text', default: 'Смирнова Елена Викторовна' },
-          { id: 'rank',   label: 'Учёная степень', selector: '.teacher-card__rank',  type: 'text', default: 'к.ф.-м.н., доцент' },
-          { id: 'role',   label: 'Должность',     selector: '.teacher-card__role',   type: 'text', default: 'Специалист по компьютерному зрению' },
-          { id: 'bio',    label: 'Биография',     selector: '.teacher-card__bio',    type: 'multiline',
-            default: 'Работала в лаборатории Samsung AI. Под её руководством защищены 12 кандидатских диссертаций.' },
-      ]},
-      { id: 'teacher-card-3', name: 'Преподаватель 3 · Козлов', fields: [
-          { id: 'avatar', label: 'Инициалы',      selector: '.teacher-card__avatar', type: 'text', default: 'КД' },
-          { id: 'photo',  label: 'Фотография',    selector: '.teacher-card__avatar', type: 'image', default: '' },
-          { id: 'name',   label: 'ФИО',           selector: '.teacher-card__name',   type: 'text', default: 'Козлов Дмитрий Андреевич' },
-          { id: 'rank',   label: 'Учёная степень', selector: '.teacher-card__rank',  type: 'text', default: 'PhD, доцент' },
-          { id: 'role',   label: 'Должность',     selector: '.teacher-card__role',   type: 'text', default: 'Эксперт в области NLP и LLM' },
-          { id: 'bio',    label: 'Биография',     selector: '.teacher-card__bio',    type: 'multiline',
-            default: 'Стажировался в Stanford NLP Group. Соавтор открытой языковой модели RuBERT-2, используемой в 300+ проектах.' },
-      ]},
-      { id: 'teacher-card-4', name: 'Преподаватель 4 · Петрова', fields: [
-          { id: 'avatar', label: 'Инициалы',      selector: '.teacher-card__avatar', type: 'text', default: 'ПО' },
-          { id: 'photo',  label: 'Фотография',    selector: '.teacher-card__avatar', type: 'image', default: '' },
-          { id: 'name',   label: 'ФИО',           selector: '.teacher-card__name',   type: 'text', default: 'Петрова Ольга Николаевна' },
-          { id: 'rank',   label: 'Учёная степень', selector: '.teacher-card__rank',  type: 'text', default: 'д.т.н., профессор' },
-          { id: 'role',   label: 'Должность',     selector: '.teacher-card__role',   type: 'text', default: 'Научный руководитель лаборатории робототехники' },
-          { id: 'bio',    label: 'Биография',     selector: '.teacher-card__bio',    type: 'multiline',
-            default: 'Руководит грантом РНФ. Соавтор патентов на алгоритмы управления автономными системами.' },
-      ]},
-      { id: 'teacher-card-5', name: 'Преподаватель 5 · Новиков', fields: [
-          { id: 'avatar', label: 'Инициалы',      selector: '.teacher-card__avatar', type: 'text', default: 'НС' },
-          { id: 'photo',  label: 'Фотография',    selector: '.teacher-card__avatar', type: 'image', default: '' },
-          { id: 'name',   label: 'ФИО',           selector: '.teacher-card__name',   type: 'text', default: 'Новиков Сергей Михайлович' },
-          { id: 'rank',   label: 'Учёная степень', selector: '.teacher-card__rank',  type: 'text', default: 'к.т.н., старший преподаватель' },
-          { id: 'role',   label: 'Должность',     selector: '.teacher-card__role',   type: 'text', default: 'Специалист по обучению с подкреплением' },
-          { id: 'bio',    label: 'Биография',     selector: '.teacher-card__bio',    type: 'multiline',
-            default: 'Экс-ML инженер Яндекса. Разрабатывает RL-агентов для промышленной автоматизации совместно с Росатомом.' },
-      ]},
-      { id: 'teacher-card-6', name: 'Преподаватель 6 · Захарова', fields: [
-          { id: 'avatar', label: 'Инициалы',      selector: '.teacher-card__avatar', type: 'text', default: 'ЗМ' },
-          { id: 'photo',  label: 'Фотография',    selector: '.teacher-card__avatar', type: 'image', default: '' },
-          { id: 'name',   label: 'ФИО',           selector: '.teacher-card__name',   type: 'text', default: 'Захарова Мария Дмитриевна' },
-          { id: 'rank',   label: 'Учёная степень', selector: '.teacher-card__rank',  type: 'text', default: 'PhD, доцент' },
-          { id: 'role',   label: 'Должность',     selector: '.teacher-card__role',   type: 'text', default: 'Исследователь в области генеративных моделей' },
-          { id: 'bio',    label: 'Биография',     selector: '.teacher-card__bio',    type: 'multiline',
-            default: 'Публикации на NeurIPS и ICML. Читает авторский курс «Диффузионные модели» — один из первых в России.' },
-      ]},
     ],
+    lists: [
+      { id: 'about-cards',  container: '#about .cards',        item: '.card',          template: 'about-card',   addLabel: 'Добавить карточку' },
+      { id: 'programs',     container: '.cards--programs',     item: '.card--program', template: 'program-card', addLabel: 'Добавить программу' },
+      { id: 'achievements', container: '#achievementsCarousel', item: '.achieve-card', template: 'achieve-card', addLabel: 'Добавить достижение' },
+      { id: 'teachers',     container: '#teachersCarousel',     item: '.teacher-card', template: 'teacher-card', addLabel: 'Добавить преподавателя' },
+    ],
+    templates: {
+      'about-card': {
+        name: 'Карточка «О факультете»',
+        html:
+          '<div class="card">' +
+            '<span class="card__icon">Заголовок</span>' +
+            '<span class="card__number">00</span>' +
+            '<p class="card__text">Описание карточки…</p>' +
+          '</div>',
+        fields: [
+          { id: 'icon',   label: 'Подпись сверху', selector: '.card__icon',   type: 'text', default: 'Заголовок' },
+          { id: 'number', label: 'Число',          selector: '.card__number', type: 'html', default: '00' },
+          { id: 'text',   label: 'Описание',       selector: '.card__text',   type: 'multiline', default: 'Описание карточки…' },
+        ],
+      },
+      'program-card': {
+        name: 'Программа обучения',
+        html:
+          '<article class="card card--program">' +
+            '<span class="card__badge">Бакалавриат · 4 года</span>' +
+            '<h3 class="card__heading">Название программы</h3>' +
+            '<p class="card__desc">Краткое описание программы…</p>' +
+            '<a href="#apply" class="btn btn--primary btn--sm">Подробнее <span class="arrow">→</span></a>' +
+          '</article>',
+        fields: [
+          { id: 'badge',   label: 'Бейдж',    selector: '.card__badge',   type: 'text', default: 'Бакалавриат · 4 года' },
+          { id: 'heading', label: 'Название', selector: '.card__heading', type: 'text', default: 'Название программы' },
+          { id: 'desc',    label: 'Описание', selector: '.card__desc',    type: 'multiline', default: 'Краткое описание программы…' },
+          { id: 'btn',     label: 'Кнопка',   selector: '.btn',           type: 'html', default: 'Подробнее <span class="arrow">→</span>' },
+        ],
+      },
+      'achieve-card': {
+        name: 'Достижение',
+        html:
+          '<article class="achieve-card">' +
+            '<span class="achieve-card__tag">Категория</span>' +
+            '<p class="achieve-card__year">2025</p>' +
+            '<h3 class="achieve-card__title">Заголовок достижения</h3>' +
+            '<p class="achieve-card__desc">Описание достижения…</p>' +
+          '</article>',
+        fields: [
+          { id: 'tag',   label: 'Категория', selector: '.achieve-card__tag',   type: 'text', default: 'Категория' },
+          { id: 'year',  label: 'Год',       selector: '.achieve-card__year',  type: 'text', default: '2025' },
+          { id: 'title', label: 'Заголовок', selector: '.achieve-card__title', type: 'text', default: 'Заголовок достижения' },
+          { id: 'desc',  label: 'Описание',  selector: '.achieve-card__desc',  type: 'multiline', default: 'Описание достижения…' },
+        ],
+      },
+      'teacher-card': {
+        name: 'Преподаватель',
+        html:
+          '<article class="teacher-card">' +
+            '<div class="teacher-card__avatar">НН</div>' +
+            '<div class="teacher-card__body">' +
+              '<h3 class="teacher-card__name">Имя Фамилия</h3>' +
+              '<p class="teacher-card__rank">Учёная степень</p>' +
+              '<p class="teacher-card__role">Должность</p>' +
+              '<p class="teacher-card__bio">Краткая биография…</p>' +
+            '</div>' +
+          '</article>',
+        fields: [
+          { id: 'avatar', label: 'Инициалы',       selector: '.teacher-card__avatar', type: 'text',  default: 'НН' },
+          { id: 'photo',  label: 'Фотография',     selector: '.teacher-card__avatar', type: 'image', default: '' },
+          { id: 'name',   label: 'ФИО',            selector: '.teacher-card__name',   type: 'text',  default: 'Имя Фамилия' },
+          { id: 'rank',   label: 'Учёная степень', selector: '.teacher-card__rank',   type: 'text',  default: 'Учёная степень' },
+          { id: 'role',   label: 'Должность',      selector: '.teacher-card__role',   type: 'text',  default: 'Должность' },
+          { id: 'bio',    label: 'Биография',      selector: '.teacher-card__bio',    type: 'multiline', default: 'Краткая биография…' },
+        ],
+      },
+    },
   },
   {
     key: 'about',

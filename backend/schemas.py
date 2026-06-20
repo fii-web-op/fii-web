@@ -79,6 +79,18 @@ class DynamicBlockUpdateIn(BaseModel):
     position: int | None = None
 
 
+class DynamicBlockBulkItemIn(BaseModel):
+    fields: dict[str, str] = Field(default_factory=dict)
+
+
+class DynamicBlockBulkIn(BaseModel):
+    """Adopt a page's existing static items into managed blocks, in one shot."""
+    page_key:    str = Field(..., min_length=1, max_length=64)
+    list_id:     str = Field(..., min_length=1, max_length=128)
+    template_id: str = Field(..., min_length=1, max_length=128)
+    items:       list[DynamicBlockBulkItemIn] = Field(default_factory=list)
+
+
 class PublicOverridesOut(BaseModel):
     """Snapshot that the public site fetches on every page load."""
     page_key: str
