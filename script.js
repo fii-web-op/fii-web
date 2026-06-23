@@ -185,6 +185,37 @@ document.querySelectorAll('.cards, .cards--programs, .reviews__grid').forEach((g
     return wrap.firstElementChild;
   }
 
+  const SECTIONS_LIST_ID = window.SECTIONS_LIST_ID || '__sections__';
+
+  // Insert admin-added whole sections (list `__sections__`) just before the
+  // footer, without touching the page's static content. Each section's template
+  // — and its inner card list, if any — is registered into the page object so
+  // the regular list rendering/binding below handles its cards.
+  function renderSections(pageDef, blocks) {
+    document.querySelectorAll('[data-fii-section]').forEach((el) => el.remove());
+    if (!pageDef || !Array.isArray(blocks) || !blocks.length || !window.SECTION_TEMPLATES) return;
+    const sections = blocks
+      .filter((b) => b.list_id === SECTIONS_LIST_ID)
+      .sort((a, b) => a.position - b.position);
+    if (!sections.length) return;
+    const footer = document.querySelector('.footer');
+    sections.forEach((b) => {
+      const tmpl = window.SECTION_TEMPLATES[b.template_id];
+      const el = tmpl && renderTemplateEl(tmpl.html);
+      if (!el) return;
+      el.dataset.tile = b.tile_id;
+      el.dataset.fiiTemplate = b.template_id;
+      el.dataset.fiiSection = '1';
+      const reg = window.FII_SECTIONS.registerInto(pageDef, b.tile_id, b.template_id);
+      if (reg && reg.innerContainerSelector) {
+        const grid = el.querySelector(reg.innerContainerSelector);
+        if (grid) grid.dataset.fiiList = reg.innerListId;
+      }
+      if (footer && footer.parentNode) footer.parentNode.insertBefore(el, footer);
+      else document.body.appendChild(el);
+    });
+  }
+
   // Replace a list container's children with the admin-managed blocks from the
   // DB. When a list has no blocks (not migrated, or API offline) the page's
   // static markup is left untouched as a fallback.
@@ -232,6 +263,9 @@ document.querySelectorAll('.cards, .cards--programs, .reviews__grid').forEach((g
 
     // Materialise admin-added blocks before the apply loop runs, so the freshly
     // inserted [data-tile] elements receive their content/visibility below.
+    // Sections first: they register their inner card lists into pageDef, which
+    // renderDynamicBlocks then fills.
+    renderSections(pageDef, payload.blocks || []);
     renderDynamicBlocks(pageDef, payload.blocks || []);
 
     // Include both the current page's tiles and the global/shared tiles so the
