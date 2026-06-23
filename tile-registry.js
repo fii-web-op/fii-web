@@ -571,3 +571,124 @@ window.PAGE_REGISTRY = [
     ],
   },
 ];
+
+/* =========================================================
+   Section templates (Этап 3, п.2) — целые секции, которые
+   админ может добавлять на любую страницу. Каждая секция —
+   это динамический блок со списком `__sections__`. Секция
+   может содержать собственный редактируемый список карточек
+   (`list` + `itemTemplate`).
+
+   При рендере секции её шаблон (и, если есть, вложенный
+   список/шаблон карточек) динамически регистрируются в
+   объект страницы, поэтому вся остальная машинерия —
+   привязка, добавление, удаление, порядок — работает без
+   изменений.
+   ========================================================= */
+window.SECTIONS_LIST_ID = '__sections__';
+
+window.SECTION_TEMPLATES = {
+  'sec-text': {
+    name: 'Текстовая секция',
+    html:
+      '<section class="section">' +
+        '<div class="container">' +
+          '<header class="section__head">' +
+            '<span class="section__eyebrow">Надзаголовок</span>' +
+            '<h2 class="section__title">Заголовок секции</h2>' +
+            '<p class="section__subtitle">Описание секции…</p>' +
+          '</header>' +
+        '</div>' +
+      '</section>',
+    fields: [
+      { id: 'eyebrow',  label: 'Надзаголовок', selector: '.section__eyebrow',  type: 'text', default: 'Надзаголовок' },
+      { id: 'title',    label: 'Заголовок',    selector: '.section__title',    type: 'text', default: 'Заголовок секции' },
+      { id: 'subtitle', label: 'Описание',     selector: '.section__subtitle', type: 'multiline', default: 'Описание секции…' },
+    ],
+  },
+  'sec-cta': {
+    name: 'Секция-призыв (CTA)',
+    html:
+      '<section class="section apply section--dark">' +
+        '<div class="container apply__inner">' +
+          '<h2 class="section__title">Готовы сделать шаг?</h2>' +
+          '<p class="section__subtitle">Короткий поясняющий текст к призыву…</p>' +
+          '<a href="#" class="btn btn--white btn--lg">Кнопка</a>' +
+        '</div>' +
+      '</section>',
+    fields: [
+      { id: 'title',    label: 'Заголовок',     selector: '.section__title',    type: 'text', default: 'Готовы сделать шаг?' },
+      { id: 'subtitle', label: 'Описание',      selector: '.section__subtitle', type: 'multiline', default: 'Короткий поясняющий текст к призыву…' },
+      { id: 'btn',      label: 'Текст кнопки',  selector: '.btn',               type: 'html', default: 'Кнопка' },
+      { id: 'btnurl',   label: 'Ссылка кнопки', selector: '.btn',               type: 'link', default: '' },
+    ],
+  },
+  'sec-cards': {
+    name: 'Секция с карточками',
+    html:
+      '<section class="section">' +
+        '<div class="container">' +
+          '<header class="section__head">' +
+            '<span class="section__eyebrow">Надзаголовок</span>' +
+            '<h2 class="section__title">Заголовок секции</h2>' +
+            '<p class="section__subtitle">Описание…</p>' +
+          '</header>' +
+          '<div class="cards"></div>' +
+        '</div>' +
+      '</section>',
+    fields: [
+      { id: 'eyebrow',  label: 'Надзаголовок', selector: '.section__eyebrow',  type: 'text', default: 'Надзаголовок' },
+      { id: 'title',    label: 'Заголовок',    selector: '.section__title',    type: 'text', default: 'Заголовок секции' },
+      { id: 'subtitle', label: 'Описание',     selector: '.section__subtitle', type: 'multiline', default: 'Описание…' },
+    ],
+    list: {
+      container: '.cards', item: '.card', addLabel: 'Добавить карточку',
+      itemTemplate: {
+        html:
+          '<div class="card">' +
+            '<span class="card__icon">Заголовок</span>' +
+            '<span class="card__number">00</span>' +
+            '<p class="card__text">Описание карточки…</p>' +
+          '</div>',
+        fields: [
+          { id: 'icon',   label: 'Подпись сверху', selector: '.card__icon',   type: 'text', default: 'Заголовок' },
+          { id: 'number', label: 'Число',          selector: '.card__number', type: 'html', default: '00' },
+          { id: 'text',   label: 'Описание',       selector: '.card__text',   type: 'multiline', default: 'Описание карточки…' },
+        ],
+      },
+    },
+  },
+};
+
+// Register a section instance's template (and its inner card list/template, if
+// any) into a page object so the regular rendering/binding machinery handles it.
+// Idempotent. Returns { innerListId, innerContainerSelector } when the section
+// has an inner list, else null.
+window.FII_SECTIONS = {
+  registerInto(pageDef, sectionTileId, sectionTemplateId) {
+    const tmpl = window.SECTION_TEMPLATES[sectionTemplateId];
+    if (!pageDef || !tmpl) return null;
+    pageDef.templates = pageDef.templates || {};
+    pageDef.lists = pageDef.lists || [];
+    // The section root resolves its fields as a normal template, keyed by id.
+    pageDef.templates[sectionTemplateId] = { html: tmpl.html, fields: tmpl.fields };
+    if (!tmpl.list) return null;
+
+    const innerTemplateId = sectionTemplateId + '__item';
+    pageDef.templates[innerTemplateId] = {
+      html: tmpl.list.itemTemplate.html,
+      fields: tmpl.list.itemTemplate.fields,
+    };
+    const innerListId = sectionTileId + '__items';
+    if (!pageDef.lists.some((l) => l.id === innerListId)) {
+      pageDef.lists.push({
+        id: innerListId,
+        container: '[data-fii-list="' + innerListId + '"]',
+        item: tmpl.list.item,
+        template: innerTemplateId,
+        addLabel: tmpl.list.addLabel || 'Добавить карточку',
+      });
+    }
+    return { innerListId, innerContainerSelector: tmpl.list.container };
+  },
+};

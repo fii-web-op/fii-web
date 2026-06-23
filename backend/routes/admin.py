@@ -265,6 +265,24 @@ def delete_dynamic_block(
             TileVisibility.page_key == page_key, TileVisibility.tile_id == tile_id,
         )
     )
+    # If this is a section, cascade-delete the cards nested inside it
+    # (their list_id is "<section tile_id>__items").
+    child_list_id = f"{tile_id}__items"
+    child_tile_ids = list(db.scalars(
+        select(DynamicBlock.tile_id).where(
+            DynamicBlock.page_key == page_key, DynamicBlock.list_id == child_list_id,
+        )
+    ))
+    if child_tile_ids:
+        db.execute(delete(DynamicBlock).where(
+            DynamicBlock.page_key == page_key, DynamicBlock.list_id == child_list_id,
+        ))
+        db.execute(delete(BlockField).where(
+            BlockField.page_key == page_key, BlockField.tile_id.in_(child_tile_ids),
+        ))
+        db.execute(delete(TileVisibility).where(
+            TileVisibility.page_key == page_key, TileVisibility.tile_id.in_(child_tile_ids),
+        ))
     db.commit()
     return Response(status_code=status.HTTP_204_NO_CONTENT)
 

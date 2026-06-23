@@ -187,6 +187,13 @@
       color:#2b4eea;background:rgba(43,78,234,.06);border:2px dashed rgba(43,78,234,.5);
       border-radius:12px;transition:background .12s,border-color .12s;}
     .fii-add-block:hover{background:rgba(43,78,234,.12);border-color:#2b4eea;}
+    .fii-add-section-wrap{position:relative;margin:28px auto;max-width:720px;padding:0 24px;}
+    .fii-add-section{width:100%;min-width:0;}
+    .fii-section-menu{display:flex;flex-direction:column;gap:6px;margin-top:8px;}
+    .fii-section-menu__item{padding:12px 16px;cursor:pointer;text-align:left;
+      border:1px solid rgba(43,78,234,.3);border-radius:10px;background:#fff;color:#1b2138;
+      font-family:'Inter',system-ui,sans-serif;font-size:14px;font-weight:600;}
+    .fii-section-menu__item:hover{background:rgba(43,78,234,.08);}
   `;
 
   function injectStyle(doc) {
@@ -307,6 +314,14 @@
       bindFields(tileEl, tile.id, tile.fields);
     });
 
+    // Register admin-added sections (rendered by script.js) so their templates
+    // and inner card lists are known to the editor before we bind anything.
+    doc.querySelectorAll('[data-fii-section]').forEach((el) => {
+      if (el.dataset.tile && el.dataset.fiiTemplate && window.FII_SECTIONS) {
+        window.FII_SECTIONS.registerInto(currentPage, el.dataset.tile, el.dataset.fiiTemplate);
+      }
+    });
+
     // Admin-added dynamic blocks (rendered by script.js with data-fii-template).
     doc.querySelectorAll('[data-fii-template]').forEach((el) => bindDynamicBlockEl(el, doc));
 
@@ -315,8 +330,74 @@
 
     // "＋ Add block" control inside every list container on the page.
     ensureAddButtons(doc);
+    // "＋ Add section" control (with a template picker) before the footer.
+    ensureAddSectionButton(doc);
 
     bindDoc(doc, win);
+  }
+
+  function ensureAddSectionButton(doc) {
+    const footer = doc.querySelector('.footer');
+    if (!footer || !footer.parentNode || doc.__fiiAddSectionBound || !window.SECTION_TEMPLATES) return;
+    doc.__fiiAddSectionBound = true;
+    const wrap = doc.createElement('div');
+    wrap.className = 'fii-add-section-wrap';
+    const btn = doc.createElement('button');
+    btn.type = 'button';
+    btn.className = 'fii-add-block fii-add-section';
+    btn.textContent = '＋ Добавить секцию';
+    const menu = doc.createElement('div');
+    menu.className = 'fii-section-menu';
+    menu.style.display = 'none';
+    Object.keys(window.SECTION_TEMPLATES).forEach((id) => {
+      const item = doc.createElement('button');
+      item.type = 'button';
+      item.className = 'fii-section-menu__item';
+      item.textContent = window.SECTION_TEMPLATES[id].name || id;
+      item.addEventListener('click', (e) => { e.preventDefault(); menu.style.display = 'none'; addSection(id); });
+      menu.appendChild(item);
+    });
+    btn.addEventListener('click', (e) => {
+      e.preventDefault();
+      menu.style.display = menu.style.display === 'none' ? 'flex' : 'none';
+    });
+    wrap.appendChild(btn);
+    wrap.appendChild(menu);
+    footer.parentNode.insertBefore(wrap, footer);
+  }
+
+  async function addSection(templateId) {
+    const tmpl = (window.SECTION_TEMPLATES || {})[templateId];
+    if (!tmpl) return;
+    const defaults = {};
+    (tmpl.fields || []).forEach((f) => { if (f.default) defaults[f.id] = f.default; });
+    try {
+      const block = await api.createDynamicBlock({
+        page_key: currentPage.key, list_id: window.SECTIONS_LIST_ID, template_id: templateId, fields: defaults,
+      });
+      const doc = frame.contentDocument;
+      const footer = doc.querySelector('.footer');
+      const holder = doc.createElement('div');
+      holder.innerHTML = (tmpl.html || '').trim();
+      const el = holder.firstElementChild;
+      if (!el || !footer) { showToast('Секция создана — обновите превью'); return; }
+      el.dataset.tile = block.tile_id;
+      el.dataset.fiiTemplate = templateId;
+      el.dataset.fiiSection = '1';
+      const reg = window.FII_SECTIONS.registerInto(currentPage, block.tile_id, templateId);
+      if (reg && reg.innerContainerSelector) {
+        const grid = el.querySelector(reg.innerContainerSelector);
+        if (grid) grid.dataset.fiiList = reg.innerListId;
+      }
+      footer.parentNode.insertBefore(el, footer);
+      bindDynamicBlockEl(el, doc);
+      ensureAddButtons(doc); // add the "＋ card" control inside the new section's list
+      (state.content[currentPage.key] ||= {});
+      state.content[currentPage.key][block.tile_id] = { ...defaults };
+      showToast('Секция добавлена ✓ — кликните, чтобы отредактировать');
+    } catch (err) {
+      showToast('Не удалось добавить секцию: ' + err.message, 3500);
+    }
   }
 
   // Read the field values of one static item straight from the rendered DOM, so
