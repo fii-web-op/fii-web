@@ -550,6 +550,44 @@ document.querySelectorAll('.cards, .cards--programs, .reviews__grid').forEach((g
   }
 })();
 
+// ===== ANALYTICS — log a page view =====
+// Pings /api/public/track once per page load. Session id lives in
+// sessionStorage so views from the same tab count as a single visitor; clearing
+// the tab or browser starts a new one. Admin previews are skipped.
+(function trackPageView() {
+  if (window.__FII_PREVIEW__ === true) return;
+  const metaEl = document.querySelector('meta[name="fii-api-base"]');
+  const apiBase = (window.FII_API_BASE || (metaEl && metaEl.content) || '').replace(/\/$/, '');
+  if (!apiBase) return;
+
+  let sid = null;
+  try { sid = sessionStorage.getItem('fii_sid'); } catch (e) { /* private mode */ }
+  if (!sid) {
+    sid = (window.crypto && window.crypto.randomUUID)
+      ? window.crypto.randomUUID()
+      : Math.random().toString(36).slice(2) + Date.now().toString(36);
+    try { sessionStorage.setItem('fii_sid', sid); } catch (e) { /* noop */ }
+  }
+
+  const pageKey = (document.body && document.body.dataset && document.body.dataset.page)
+    || window.__FII_PAGE_KEY__ || null;
+
+  try {
+    fetch(`${apiBase}/api/public/track`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      credentials: 'omit',
+      keepalive: true,
+      body: JSON.stringify({
+        page_key: pageKey,
+        path: location.pathname + location.search,
+        referrer: document.referrer || null,
+        session_id: sid,
+      }),
+    }).catch(() => { /* best-effort */ });
+  } catch (e) { /* noop */ }
+})();
+
 // ===== CAROUSEL NAVIGATION =====
 (function initCarousels() {
   const SCROLL_AMOUNT = 300;

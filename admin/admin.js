@@ -36,8 +36,8 @@
   }
 
   // In-memory mirror of overrides/visibility — keyed by page → tile → field.
-  const state = { content: {}, visibility: {}, ticker: [], news: [], photos: [] };
-  const loaded = { ticker: false, news: false, photos: false };
+  const state = { content: {}, visibility: {}, ticker: [], news: [], photos: [], analytics: null };
+  const loaded = { ticker: false, news: false, photos: false, analytics: false };
   // Lists already converted to managed (dynamic) blocks — "pageKey||listId".
   const adoptedLists = new Set();
 
@@ -1043,7 +1043,7 @@
   //  TOOLS DRAWER (новости / фото / бегущая строка)
   // =================================================================
   const drawer = $('#toolDrawer');
-  const TOOL_TITLES = { news: 'Новости', photos: 'Фотографии', ticker: 'Бегущая строка' };
+  const TOOL_TITLES = { news: 'Новости', photos: 'Фотографии', ticker: 'Бегущая строка', analytics: 'Аналитика' };
 
   function openDrawer() { drawer.classList.add('is-open'); drawer.setAttribute('aria-hidden', 'false'); }
   function closeDrawer() { drawer.classList.remove('is-open'); drawer.setAttribute('aria-hidden', 'true'); }
@@ -1068,6 +1068,12 @@
       if (tool === 'news' && !loaded.news) { state.news = await api.listNews(); loaded.news = true; renderNews(); }
       if (tool === 'photos' && !loaded.photos) { state.photos = await api.listPhotos(); loaded.photos = true; renderPhotos(); }
       if (tool === 'ticker' && !loaded.ticker) { state.ticker = await api.getTicker(); loaded.ticker = true; renderTicker(); }
+      if (tool === 'analytics') {
+        if (!loaded.analytics) {
+          await loadAnalytics(Number($('#analyticsDays')?.value) || 14);
+          loaded.analytics = true;
+        }
+      }
     } catch (err) { showToast('Ошибка загрузки: ' + err.message, 3500); }
   }
 
@@ -1222,5 +1228,97 @@
       renderTicker();
       showToast('Бегущая строка очищена');
     } catch (err) { showToast(err.message); }
+  });
+
+  // ---------- Analytics ---------------------------------------------
+  // Display-only labels for known static pages. Admin-created pages use their
+  // own key as-is (rare enough that wiring the full registry isn't worth it).
+  const PAGE_TITLES = {
+    index: 'Главная',
+    about: 'О факультете',
+    achievements: 'Достижения',
+    news: 'Новости',
+    reviews: 'Отзывы',
+    admission: 'Поступление',
+    grant: 'Гранты',
+    _shared: 'Общие блоки',
+  };
+
+  function formatDayLabel(iso) {
+    // "2026-06-24" → "24.06"
+    const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(iso || '');
+    return m ? `${m[3]}.${m[2]}` : iso;
+  }
+
+  async function loadAnalytics(days) {
+    const chart = $('#analyticsChart');
+    if (chart) chart.innerHTML = '<span class="tool-pane__hint" style="margin:0">Загрузка…</span>';
+    try {
+      const data = await api.getAnalytics(days);
+      state.analytics = data;
+      renderAnalytics(data);
+    } catch (err) {
+      if (chart) chart.innerHTML = '';
+      showToast('Не удалось загрузить аналитику: ' + err.message, 3500);
+    }
+  }
+
+  function renderAnalytics(data) {
+    if (!data) return;
+    $('#metricViewsToday').textContent  = data.views_today.toLocaleString('ru-RU');
+    $('#metricSessionsTodaySub').textContent = `${data.sessions_today.toLocaleString('ru-RU')} уникальных`;
+    $('#metricViews7').textContent      = data.views_7d.toLocaleString('ru-RU');
+    $('#metricSessions7Sub').textContent = `${data.sessions_7d.toLocaleString('ru-RU')} уникальных`;
+    $('#metricViews30').textContent     = data.views_30d.toLocaleString('ru-RU');
+    $('#metricSessions30Sub').textContent = `${data.sessions_30d.toLocaleString('ru-RU')} уникальных`;
+    $('#metricViewsAll').textContent    = data.total_views.toLocaleString('ru-RU');
+    $('#metricSessionsAllSub').textContent = `${data.total_sessions.toLocaleString('ru-RU')} уникальных`;
+
+    renderAnalyticsChart(data.daily || []);
+
+    renderAnalyticsList('topPagesList', data.top_pages || [], (label) =>
+      PAGE_TITLES[label] || (label === '—' ? 'Прочее' : label));
+    renderAnalyticsList('topReferrersList', data.top_referrers || [], (label) => label);
+  }
+
+  function renderAnalyticsChart(daily) {
+    const el = $('#analyticsChart');
+    if (!el) return;
+    if (!daily.length) {
+      el.innerHTML = '<span class="tool-pane__hint" style="margin:0">Нет данных за выбранный период</span>';
+      return;
+    }
+    const maxViews = Math.max(1, ...daily.map((d) => d.views));
+    el.innerHTML = daily.map((d) => {
+      const hv = Math.round((d.views / maxViews) * 100);
+      const hs = Math.round((d.sessions / maxViews) * 100);
+      const tip = `${formatDayLabel(d.label)} · ${d.views} просмотров, ${d.sessions} посетителей`;
+      return `
+        <div class="analytics-chart__col" title="${escapeHtml(tip)}">
+          <div class="analytics-chart__bars">
+            <div class="analytics-chart__bar" style="height:${hv}%"></div>
+            <div class="analytics-chart__bar analytics-chart__bar--sessions" style="height:${hs}%"></div>
+          </div>
+          <span class="analytics-chart__label">${formatDayLabel(d.label)}</span>
+        </div>`;
+    }).join('');
+  }
+
+  function renderAnalyticsList(elId, rows, labelFn) {
+    const el = $('#' + elId);
+    if (!el) return;
+    if (!rows.length) {
+      el.innerHTML = '<li class="analytics-list__empty">Пока нет данных</li>';
+      return;
+    }
+    el.innerHTML = rows.map((r) => `
+      <li>
+        <span class="analytics-list__label">${escapeHtml(labelFn(r.label))}</span>
+        <span class="analytics-list__count"><strong>${r.views.toLocaleString('ru-RU')}</strong> просмотров · ${r.sessions.toLocaleString('ru-RU')} уник.</span>
+      </li>`).join('');
+  }
+
+  $('#analyticsDays')?.addEventListener('change', (e) => {
+    loadAnalytics(Number(e.target.value) || 14);
   });
 })();

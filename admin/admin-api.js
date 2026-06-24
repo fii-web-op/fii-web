@@ -111,6 +111,10 @@
   };
   const deletePhoto  = (id)       => request(`/api/admin/photos/${id}`, { method: 'DELETE' });
 
+  // Analytics
+  const getAnalytics = (days = 14) =>
+    request(`/api/admin/analytics/summary?days=${encodeURIComponent(days)}`);
+
   // Inline image upload (e.g. a photo dropped straight into a tile). Returns
   // { url, original_name }; the URL is stored as the block field value.
   const uploadImage  = (file)     => {
@@ -129,5 +133,6 @@
     getTicker, replaceTicker,
     listNews, createNews, deleteNews,
     listPhotos, uploadPhotos, deletePhoto, uploadImage,
+    getAnalytics,
   };
 })(window);

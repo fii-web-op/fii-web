@@ -147,3 +147,38 @@ class PageOut(BaseModel):
 class PageCreateIn(BaseModel):
     key:   str = Field(..., min_length=1, max_length=64, pattern=r"^[a-z0-9][a-z0-9-]*$")
     title: str = Field(..., min_length=1, max_length=128)
+
+
+# ---------- Analytics -----------------------------------------------------
+
+class PageViewIn(BaseModel):
+    page_key:   str | None = Field(default=None, max_length=64)
+    path:       str = Field(..., min_length=1, max_length=500)
+    referrer:   str | None = Field(default=None, max_length=500)
+    session_id: str = Field(..., min_length=1, max_length=64)
+
+
+class AnalyticsBucket(BaseModel):
+    label: str       # ISO date "YYYY-MM-DD"
+    views: int
+    sessions: int
+
+
+class AnalyticsRow(BaseModel):
+    label: str       # page key / referrer host
+    views: int
+    sessions: int
+
+
+class AnalyticsSummary(BaseModel):
+    total_views:     int
+    total_sessions:  int
+    views_today:     int
+    sessions_today:  int
+    views_7d:        int
+    sessions_7d:     int
+    views_30d:       int
+    sessions_30d:    int
+    daily:           list[AnalyticsBucket]
+    top_pages:       list[AnalyticsRow]
+    top_referrers:   list[AnalyticsRow]
