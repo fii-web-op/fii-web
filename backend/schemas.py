@@ -133,3 +133,17 @@ class PhotoOut(BaseModel):
 
 class PhotoUpdateIn(BaseModel):
     caption: str | None = None
+
+
+# ---------- Pages (admin-created) -----------------------------------------
+
+class PageOut(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+    key: str
+    title: str
+    position: int
+
+
+class PageCreateIn(BaseModel):
+    key:   str = Field(..., min_length=1, max_length=64, pattern=r"^[a-z0-9][a-z0-9-]*$")
+    title: str = Field(..., min_length=1, max_length=128)

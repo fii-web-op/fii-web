@@ -72,9 +72,21 @@
       for (const b of dynamic) adoptedLists.add(b.page_key + '||' + b.list_id);
     } catch (e) { console.warn('Не удалось загрузить состояние:', e); }
 
+    try {
+      const dbPages = await api.listPages();
+      for (const p of dbPages) mergeDbPage(p);
+    } catch (e) { console.warn('Не удалось загрузить страницы:', e); }
+
     renderPagesNav();
     if (currentPage) selectPage(currentPage.key);
   })();
+
+  // Admin-created pages are fully dynamic: no static tiles/lists, content comes
+  // entirely from sections. They render from the shared shell at /p/{key}.
+  function mergeDbPage(p) {
+    if (PAGES.some((x) => x.key === p.key)) return;
+    PAGES.push({ key: p.key, title: p.title, file: `${p.key}.html`, dynamic: true, tiles: [], lists: [], templates: {} });
+  }
 
   $('#logoutBtn')?.addEventListener('click', () => api.logout());
 
@@ -88,12 +100,63 @@
       <button class="ed-page" data-page="${escapeHtml(p.key)}">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
         <span>${escapeHtml(p.title)}</span>
-        <span class="ed-page__meta">${(p.tiles || []).length}</span>
+        ${p.dynamic
+          ? `<span class="ed-page__del" data-del="${escapeHtml(p.key)}" title="Удалить страницу" role="button">✕</span>`
+          : `<span class="ed-page__meta">${(p.tiles || []).length}</span>`}
       </button>`).join('');
+    if (nav.__fiiBound) return;
+    nav.__fiiBound = true;
     nav.addEventListener('click', (e) => {
+      const del = e.target.closest('[data-del]');
+      if (del) { e.stopPropagation(); deletePage(del.dataset.del); return; }
       const btn = e.target.closest('.ed-page');
       if (btn) selectPage(btn.dataset.page);
     });
+  }
+
+  $('#createPageBtn')?.addEventListener('click', createPage);
+
+  // Suggest a latin slug from a (possibly Russian) title.
+  const TRANSLIT = {
+    а:'a',б:'b',в:'v',г:'g',д:'d',е:'e',ё:'e',ж:'zh',з:'z',и:'i',й:'y',к:'k',л:'l',м:'m',
+    н:'n',о:'o',п:'p',р:'r',с:'s',т:'t',у:'u',ф:'f',х:'h',ц:'c',ч:'ch',ш:'sh',щ:'sch',
+    ъ:'',ы:'y',ь:'',э:'e',ю:'yu',я:'ya',
+  };
+  function slugify(s) {
+    return (s || '').toLowerCase().split('').map((c) => (c in TRANSLIT ? TRANSLIT[c] : c)).join('')
+      .replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
+  }
+
+  async function createPage() {
+    const title = (window.prompt('Название новой страницы:') || '').trim();
+    if (!title) return;
+    let key = (window.prompt('Адрес страницы латиницей (буквы, цифры, дефис):', slugify(title)) || '').trim();
+    key = slugify(key);
+    if (!key) { showToast('Некорректный адрес страницы'); return; }
+    try {
+      const page = await api.createPage({ key, title });
+      mergeDbPage(page);
+      renderPagesNav();
+      selectPage(page.key);
+      showToast('Страница создана ✓ — добавьте на неё секции');
+    } catch (err) {
+      showToast('Не удалось создать: ' + err.message, 3500);
+    }
+  }
+
+  async function deletePage(key) {
+    if (!confirm('Удалить эту страницу со всем её содержимым? Действие нельзя отменить.')) return;
+    try {
+      await api.deletePage(key);
+      const i = PAGES.findIndex((p) => p.key === key);
+      if (i >= 0) PAGES.splice(i, 1);
+      if (currentPage && currentPage.key === key) currentPage = PAGES[0] || null;
+      renderPagesNav();
+      if (currentPage) selectPage(currentPage.key);
+      showToast('Страница удалена');
+    } catch (err) {
+      showToast('Не удалось удалить: ' + err.message, 3500);
+    }
   }
 
   function selectPage(key) {
@@ -106,7 +169,9 @@
     $$('.ed-page').forEach((b) => b.classList.toggle('is-active', b.dataset.page === key));
     $('#previewTitle').textContent = page.title;
     showLoader(true);
-    frame.src = `/preview/${page.file}`;
+    frame.src = page.dynamic
+      ? `/p/${encodeURIComponent(page.key)}?preview=1`
+      : `/preview/${page.file}`;
   }
 
   function showLoader(on) {

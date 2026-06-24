@@ -9,8 +9,8 @@ from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from ..database import get_db
-from ..models import BlockField, DynamicBlock, News, Photo, TickerItem, TileVisibility
-from ..schemas import DynamicBlockOut, NewsOut, PhotoOut, PublicOverridesOut
+from ..models import BlockField, DynamicBlock, News, Page, Photo, TickerItem, TileVisibility
+from ..schemas import DynamicBlockOut, NewsOut, PageOut, PhotoOut, PublicOverridesOut
 
 router = APIRouter(prefix="/api/public", tags=["public"])
 
@@ -58,3 +58,9 @@ def list_published_news(db: Annotated[Session, Depends(get_db)]) -> list[News]:
 @router.get("/photos", response_model=list[PhotoOut])
 def list_photos(db: Annotated[Session, Depends(get_db)]) -> list[Photo]:
     return list(db.scalars(select(Photo).order_by(Photo.uploaded_at.desc())))
+
+
+@router.get("/pages", response_model=list[PageOut])
+def list_pages(db: Annotated[Session, Depends(get_db)]) -> list[Page]:
+    """Admin-created pages — drives the site nav and the admin sidebar."""
+    return list(db.scalars(select(Page).order_by(Page.position, Page.id)))

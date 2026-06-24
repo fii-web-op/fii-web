@@ -26,7 +26,7 @@ from sqlalchemy.orm import Session
 from ..auth import get_current_user
 from ..config import get_settings
 from ..database import engine, get_db
-from ..models import BlockField, DynamicBlock, News, Photo, TickerItem, TileVisibility, User
+from ..models import BlockField, DynamicBlock, News, Page, Photo, TickerItem, TileVisibility, User
 from ..schemas import (
     BlockFieldIn,
     BlockFieldOut,
@@ -36,12 +36,20 @@ from ..schemas import (
     DynamicBlockUpdateIn,
     NewsOut,
     NewsStatus,
+    PageCreateIn,
+    PageOut,
     PhotoOut,
     PhotoUpdateIn,
     TickerReplaceIn,
     TileVisibilityIn,
     TileVisibilityOut,
 )
+
+# Page keys that already belong to the built-in static site / shared tiles —
+# admin-created pages must not reuse them (their content would collide).
+_RESERVED_PAGE_KEYS = {
+    "index", "about", "achievements", "news", "reviews", "admission", "grant", "_shared",
+}
 
 router = APIRouter(prefix="/api/admin", tags=["admin"], dependencies=[Depends(get_current_user)])
 
@@ -437,6 +445,41 @@ def delete_photo(photo_id: int, db: Annotated[Session, Depends(get_db)]) -> Resp
     except OSError:
         pass
     db.delete(p)
+    db.commit()
+    return Response(status_code=status.HTTP_204_NO_CONTENT)
+
+
+# ---------- Pages (admin-created) -----------------------------------------
+
+@router.get("/pages", response_model=list[PageOut])
+def list_pages(db: Annotated[Session, Depends(get_db)]) -> list[Page]:
+    return list(db.scalars(select(Page).order_by(Page.position, Page.id)))
+
+
+@router.post("/pages", response_model=PageOut, status_code=status.HTTP_201_CREATED)
+def create_page(payload: PageCreateIn, db: Annotated[Session, Depends(get_db)]) -> Page:
+    if payload.key in _RESERVED_PAGE_KEYS:
+        raise HTTPException(409, "Этот адрес зарезервирован, выберите другой")
+    if db.scalar(select(Page).where(Page.key == payload.key)):
+        raise HTTPException(409, "Страница с таким адресом уже существует")
+    current_max = db.scalar(select(func.max(Page.position)))
+    page = Page(key=payload.key, title=payload.title.strip(), position=(current_max or 0) + 1)
+    db.add(page)
+    db.commit()
+    db.refresh(page)
+    return page
+
+
+@router.delete("/pages/{key}", status_code=status.HTTP_204_NO_CONTENT, response_class=Response)
+def delete_page(key: str, db: Annotated[Session, Depends(get_db)]) -> Response:
+    page = db.scalar(select(Page).where(Page.key == key))
+    if not page:
+        raise HTTPException(404, "Страница не найдена")
+    # Remove the page and all of its content (blocks, fields, visibility).
+    db.execute(delete(DynamicBlock).where(DynamicBlock.page_key == key))
+    db.execute(delete(BlockField).where(BlockField.page_key == key))
+    db.execute(delete(TileVisibility).where(TileVisibility.page_key == key))
+    db.delete(page)
     db.commit()
     return Response(status_code=status.HTTP_204_NO_CONTENT)
 
