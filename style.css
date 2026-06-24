@@ -475,13 +475,18 @@ strong { color: var(--ink); font-weight: 600; }
   z-index: 120;
   width: min(88vw, 360px);
   height: 100%;
+  height: 100dvh;
   padding: 28px 28px 32px;
+  padding-bottom: max(32px, env(safe-area-inset-bottom));
   background: var(--paper);
   border-right: 1px solid var(--rule);
   transform: translateX(-100%);
   transition: transform var(--t-slow);
   display: flex;
   flex-direction: column;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior: contain;
 }
 
 .sidebar.is-open {
@@ -547,6 +552,18 @@ strong { color: var(--ink); font-weight: 600; }
 .sidebar__link:hover .sidebar__icon,
 .sidebar__link[aria-current="page"] .sidebar__icon {
   stroke: var(--accent);
+}
+
+/* Тактильный отклик на тач-устройствах (без залипающего :hover). */
+.sidebar__link:active {
+  color: var(--accent);
+}
+
+/* CTA внутри мобильного меню: на мобиле header__cta скрыт,
+   поэтому «Задать вопрос» дублируется в панели навигации. */
+.sidebar__cta {
+  width: 100%;
+  margin-top: 28px;
 }
 
 /* ===== HERO =====
@@ -1899,6 +1916,11 @@ h1 em, h2 em, h3 em {
   .admin-fab { bottom: 16px; left: 16px; height: 40px; max-width: 40px; }
   .admin-fab:hover,
   .admin-fab:focus-visible { max-width: 260px; }
+
+  /* Метрики hero компактнее на узких экранах. */
+  .hero__meta { gap: 24px 28px; margin-top: 40px; padding-top: 28px; }
+  .hero__meta-item { min-width: 0; flex: 1 1 130px; }
+  .hero__partners-list { gap: 12px 24px; }
 }
 
 /* ===== ACCESSIBILITY ===== */
