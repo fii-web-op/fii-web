@@ -112,3 +112,17 @@ class Photo(Base):
     original_name: Mapped[str | None] = mapped_column(String(255), nullable=True)
     caption: Mapped[str | None] = mapped_column(String(500), nullable=True)
     uploaded_at: Mapped[datetime] = mapped_column(DateTime, server_default=func.now(), nullable=False)
+
+
+class Page(Base):
+    """An admin-created page. Its content lives entirely in dynamic blocks /
+    block fields keyed by this page's `key`; the page itself is served from a
+    shared HTML shell at /p/{key}."""
+
+    __tablename__ = "pages"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    key:   Mapped[str] = mapped_column(String(64), unique=True, nullable=False, index=True)
+    title: Mapped[str] = mapped_column(String(128), nullable=False)
+    position: Mapped[int] = mapped_column(Integer, default=0, nullable=False, index=True)
+    created_at: Mapped[datetime] = mapped_column(DateTime, server_default=func.now(), nullable=False)

@@ -83,6 +83,11 @@
   const deleteDynamicBlock = (p, t)  =>
     request(`/api/admin/blocks/dynamic/${encodeURIComponent(t)}?page_key=${encodeURIComponent(p)}`, { method: 'DELETE' });
 
+  // Pages (admin-created)
+  const listPages  = ()    => request('/api/admin/pages');
+  const createPage = (b)   => request('/api/admin/pages', { method: 'POST', body: b });
+  const deletePage = (key) => request(`/api/admin/pages/${encodeURIComponent(key)}`, { method: 'DELETE' });
+
   // Visibility
   const listVisibility = ()       => request('/api/admin/visibility');
   const setVisibility  = (v)      => request('/api/admin/visibility', { method: 'PUT', body: v });
@@ -119,6 +124,7 @@
     login, logout, me,
     listBlocks, saveBlock, deleteTile, deleteField, resetAll,
     listDynamicBlocks, createDynamicBlock, bulkCreateDynamicBlocks, updateDynamicBlock, deleteDynamicBlock,
+    listPages, createPage, deletePage,
     listVisibility, setVisibility,
     getTicker, replaceTicker,
     listNews, createNews, deleteNews,

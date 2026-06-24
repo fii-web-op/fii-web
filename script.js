@@ -150,7 +150,10 @@ document.querySelectorAll('.cards, .cards--programs, .reviews__grid').forEach((g
   const metaEl = document.querySelector('meta[name="fii-api-base"]');
   const apiBase = (window.FII_API_BASE || (metaEl && metaEl.content) || '').replace(/\/$/, '');
 
-  const pageKey = document.body?.dataset?.page || null;
+  // Static pages carry their key in <body data-page>. Admin-created pages are
+  // served from a shared shell that injects window.__FII_PAGE_KEY__ instead.
+  const pageKey = (document.body && document.body.dataset && document.body.dataset.page)
+    || window.__FII_PAGE_KEY__ || null;
   const SHARED_KEY = '_shared'; // global tiles (footer) shared across every page
 
   // Build a map: tile_id -> field_id -> { selector, type } from the shared registry.
@@ -258,7 +261,12 @@ document.querySelectorAll('.cards, .cards--programs, .reviews__grid').forEach((g
 
   function applyOverrides(payload) {
     const registry = window.PAGE_REGISTRY || [];
-    const pageDef = registry.find(p => p.key === pageKey);
+    // Admin-created pages aren't in the static registry; synthesize a minimal
+    // page so the section mechanism (which registers its own templates) works.
+    let pageDef = registry.find(p => p.key === pageKey);
+    if (!pageDef && pageKey && pageKey !== SHARED_KEY) {
+      pageDef = { key: pageKey, tiles: [], lists: [], templates: {} };
+    }
     const sharedDef = registry.find(p => p.key === SHARED_KEY);
 
     // Materialise admin-added blocks before the apply loop runs, so the freshly
@@ -455,7 +463,41 @@ document.querySelectorAll('.cards, .cards--programs, .reviews__grid').forEach((g
   const fetchOverrides = (key) =>
     fetch(`${apiBase}/api/public/overrides?page_key=${encodeURIComponent(key)}`, { credentials: 'omit' });
 
+  // Append admin-created pages to the site navigation (header + mobile sidebar)
+  // so they're reachable from every page. Best-effort: failures are ignored.
+  function appendNavPages(pages) {
+    if (!Array.isArray(pages) || !pages.length) return;
+    const navList = document.querySelector('.header__nav-list');
+    const sideMenu = document.querySelector('.sidebar__menu');
+    pages.forEach((p) => {
+      const href = `/p/${encodeURIComponent(p.key)}`;
+      if (navList && !navList.querySelector(`[data-fii-page="${p.key}"]`)) {
+        const li = document.createElement('li');
+        const a = document.createElement('a');
+        a.className = 'header__nav-link';
+        a.href = href; a.textContent = p.title; a.dataset.fiiPage = p.key;
+        if (p.key === pageKey) a.setAttribute('aria-current', 'page');
+        li.appendChild(a); navList.appendChild(li);
+      }
+      if (sideMenu && !sideMenu.querySelector(`[data-fii-page="${p.key}"]`)) {
+        const li = document.createElement('li');
+        const a = document.createElement('a');
+        a.className = 'sidebar__link';
+        a.href = href; a.textContent = p.title; a.dataset.fiiPage = p.key;
+        li.appendChild(a); sideMenu.appendChild(li);
+      }
+    });
+  }
+
+  async function loadNav() {
+    try {
+      const res = await fetch(`${apiBase}/api/public/pages`, { credentials: 'omit' });
+      if (res.ok) appendNavPages(await res.json());
+    } catch (e) { /* nav is best-effort */ }
+  }
+
   async function load() {
+    loadNav();
     if (apiBase) {
       try {
         // Page overrides + global (footer) overrides in parallel; the footer

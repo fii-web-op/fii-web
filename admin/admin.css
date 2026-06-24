@@ -423,3 +423,41 @@ html, body { height: 100%; }
   .ed-sidebar { width: 220px; }
   .ed-topbar__hint { display: none; }
 }
+
+/* ===== Создание / удаление страниц (Этап 3, п.3) ===== */
+.ed-create-page {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: 100%;
+  margin-top: 8px;
+  padding: 10px 12px;
+  cursor: pointer;
+  font: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  color: #2b4eea;
+  background: rgba(43, 78, 234, 0.07);
+  border: 1px dashed rgba(43, 78, 234, 0.5);
+  border-radius: 10px;
+  transition: background 0.12s, border-color 0.12s;
+}
+.ed-create-page:hover { background: rgba(43, 78, 234, 0.14); border-color: #2b4eea; }
+
+.ed-page { position: relative; }
+.ed-page__del {
+  margin-left: auto;
+  width: 22px;
+  height: 22px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 6px;
+  font-size: 13px;
+  color: #8a90a6;
+  opacity: 0;
+  transition: opacity 0.12s, background 0.12s, color 0.12s;
+}
+.ed-page:hover .ed-page__del { opacity: 1; }
+.ed-page__del:hover { background: rgba(224, 52, 75, 0.14); color: #e0344b; }

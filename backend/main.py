@@ -18,14 +18,20 @@ Run locally:
 
 from __future__ import annotations
 
+import json
 from contextlib import asynccontextmanager
+from html import escape as html_escape
 
-from fastapi import FastAPI, HTTPException
+from fastapi import Depends, FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse, HTMLResponse
 from fastapi.staticfiles import StaticFiles
+from sqlalchemy import select
+from sqlalchemy.orm import Session
 
 from .config import get_settings
+from .database import get_db
+from .models import Page
 from .routes import admin as admin_routes
 from .routes import auth as auth_routes
 from .routes import public as public_routes
@@ -129,6 +135,31 @@ def preview_file(path: str):
         return HTMLResponse(html)
 
     return FileResponse(target)
+
+
+# ---------------------------------------------------------------------------
+# Admin-created pages — served from a single shared HTML shell (page.html).
+#
+# These pages have no static file of their own: their whole content is built
+# from dynamic blocks/sections and rendered client-side by script.js. The shell
+# is served with the page's key injected so the front-end knows which content
+# to load. `?preview=1` adds the editor injection for the admin iframe.
+# Registered before the catch-all static mount so it isn't shadowed.
+# ---------------------------------------------------------------------------
+@app.get("/p/{key}", include_in_schema=False)
+def dynamic_page(
+    key: str, db: Session = Depends(get_db), preview: int = 0,
+) -> HTMLResponse:
+    page = db.scalar(select(Page).where(Page.key == key))
+    if not page:
+        raise HTTPException(status_code=404)
+    doc = (settings.PROJECT_ROOT / "page.html").read_text(encoding="utf-8")
+    doc = doc.replace("__PAGE_TITLE__", html_escape(page.title))
+    inject = f"<script>window.__FII_PAGE_KEY__={json.dumps(key)};</script>"
+    if preview:
+        inject += _PREVIEW_INJECT
+    doc = doc.replace("</head>", inject + "</head>", 1) if "</head>" in doc else inject + doc
+    return HTMLResponse(doc)
 
 
 # Admin SPA — served from the same host as the API at /admin/*.
