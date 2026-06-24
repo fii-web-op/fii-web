@@ -86,6 +86,7 @@ function openSidebar() {
   sidebar.classList.add('is-open');
   sidebarOverlay.classList.add('is-visible');
   burger.classList.add('is-active');
+  burger.setAttribute('aria-expanded', 'true');
   document.body.style.overflow = 'hidden';
 }
 
@@ -93,6 +94,7 @@ function closeSidebar() {
   sidebar.classList.remove('is-open');
   sidebarOverlay.classList.remove('is-visible');
   burger.classList.remove('is-active');
+  burger.setAttribute('aria-expanded', 'false');
   document.body.style.overflow = '';
 }
 
@@ -106,6 +108,21 @@ burger.addEventListener('click', () => {
 
 sidebarClose.addEventListener('click', closeSidebar);
 sidebarOverlay.addEventListener('click', closeSidebar);
+
+// Закрытие по Escape — стандартное поведение off-canvas меню.
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'Escape' && sidebar.classList.contains('is-open')) {
+    closeSidebar();
+  }
+});
+
+// Если экран расширился до десктопа, пока меню открыто — закрываем,
+// чтобы не остался залоченный скролл body при появлении горизонтальной навигации.
+window.addEventListener('resize', () => {
+  if (window.innerWidth >= 1024 && sidebar.classList.contains('is-open')) {
+    closeSidebar();
+  }
+});
 
 // ===== SCROLL ANIMATIONS =====
 const observerOptions = {
