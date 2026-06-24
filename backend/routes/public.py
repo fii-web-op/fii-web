@@ -4,13 +4,13 @@ from __future__ import annotations
 
 from typing import Annotated
 
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, Header, Request, Response, status
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from ..database import get_db
-from ..models import BlockField, DynamicBlock, News, Page, Photo, TickerItem, TileVisibility
-from ..schemas import DynamicBlockOut, NewsOut, PageOut, PhotoOut, PublicOverridesOut
+from ..models import BlockField, DynamicBlock, News, Page, PageView, Photo, TickerItem, TileVisibility
+from ..schemas import DynamicBlockOut, NewsOut, PageOut, PageViewIn, PhotoOut, PublicOverridesOut
 
 router = APIRouter(prefix="/api/public", tags=["public"])
 
@@ -64,3 +64,26 @@ def list_photos(db: Annotated[Session, Depends(get_db)]) -> list[Photo]:
 def list_pages(db: Annotated[Session, Depends(get_db)]) -> list[Page]:
     """Admin-created pages — drives the site nav and the admin sidebar."""
     return list(db.scalars(select(Page).order_by(Page.position, Page.id)))
+
+
+@router.post("/track", status_code=status.HTTP_204_NO_CONTENT, response_class=Response)
+def track_view(
+    payload: PageViewIn,
+    request: Request,
+    db: Annotated[Session, Depends(get_db)],
+    user_agent: Annotated[str | None, Header(alias="user-agent")] = None,
+) -> Response:
+    """Log one public page view. Called by script.js on every page load.
+
+    No auth — anyone can record their own visit. We don't store IPs (privacy);
+    the client-generated session id alone backs the "unique visitors" metric.
+    """
+    db.add(PageView(
+        page_key=payload.page_key,
+        path=payload.path[:500],
+        referrer=(payload.referrer or None) and payload.referrer[:500],
+        session_id=payload.session_id[:64],
+        user_agent=user_agent[:500] if user_agent else None,
+    ))
+    db.commit()
+    return Response(status_code=status.HTTP_204_NO_CONTENT)

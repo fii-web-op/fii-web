@@ -4,9 +4,11 @@ from __future__ import annotations
 
 import shutil
 import uuid
-from datetime import datetime
+from collections import defaultdict
+from datetime import datetime, timedelta
 from pathlib import Path
 from typing import Annotated, Optional
+from urllib.parse import urlparse
 
 from fastapi import (
     APIRouter,
@@ -26,8 +28,11 @@ from sqlalchemy.orm import Session
 from ..auth import get_current_user
 from ..config import get_settings
 from ..database import engine, get_db
-from ..models import BlockField, DynamicBlock, News, Page, Photo, TickerItem, TileVisibility, User
+from ..models import BlockField, DynamicBlock, News, Page, PageView, Photo, TickerItem, TileVisibility, User
 from ..schemas import (
+    AnalyticsBucket,
+    AnalyticsRow,
+    AnalyticsSummary,
     BlockFieldIn,
     BlockFieldOut,
     DynamicBlockBulkIn,
@@ -495,3 +500,117 @@ async def upload_image(
         raise HTTPException(400, "Файл не передан")
     url = _save_upload(file, "blocks")
     return {"url": url, "original_name": file.filename}
+
+
+# ---------- Analytics -----------------------------------------------------
+
+def _referrer_label(ref: str | None) -> str:
+    """Normalise a Referer header into a short, human-readable source label."""
+    if not ref:
+        return "Прямой переход"
+    try:
+        host = urlparse(ref).hostname or ""
+    except ValueError:
+        return "Прямой переход"
+    if not host:
+        return "Прямой переход"
+    host = host.lower().removeprefix("www.")
+    return host
+
+
+@router.get("/analytics/summary", response_model=AnalyticsSummary)
+def analytics_summary(
+    db: Annotated[Session, Depends(get_db)], days: int = 14,
+) -> AnalyticsSummary:
+    """Aggregated stats for the admin dashboard.
+
+    `days` controls only the daily time series (default 14). Totals always
+    cover the full table; the 7d/30d/today buckets are computed on top of
+    rows fetched within a single window (= max(days, 30)).
+    """
+    days = max(1, min(days, 90))
+    now = datetime.utcnow()
+    start_of_today = now.replace(hour=0, minute=0, second=0, microsecond=0)
+    window_days = max(days, 30)
+    window_start = start_of_today - timedelta(days=window_days - 1)
+
+    # All-time totals — one round-trip each, cheap on the small page_views table.
+    total_views = db.scalar(select(func.count(PageView.id))) or 0
+    total_sessions = db.scalar(select(func.count(func.distinct(PageView.session_id)))) or 0
+
+    # One scan over the recent window powers every recency-based metric below.
+    rows = list(
+        db.execute(
+            select(PageView.page_key, PageView.referrer, PageView.session_id, PageView.created_at)
+            .where(PageView.created_at >= window_start)
+        )
+    )
+
+    by_day_views: dict[str, int] = defaultdict(int)
+    by_day_sessions: dict[str, set[str]] = defaultdict(set)
+    page_views: dict[str, int] = defaultdict(int)
+    page_sessions: dict[str, set[str]] = defaultdict(set)
+    ref_views: dict[str, int] = defaultdict(int)
+    ref_sessions: dict[str, set[str]] = defaultdict(set)
+    views_today = 0
+    sessions_today_set: set[str] = set()
+    views_7d = 0
+    sessions_7d_set: set[str] = set()
+    views_30d = 0
+    sessions_30d_set: set[str] = set()
+    seven_days_ago = start_of_today - timedelta(days=6)   # last 7 days incl. today
+
+    for page_key, referrer, session_id, created_at in rows:
+        day = created_at.date().isoformat()
+        by_day_views[day] += 1
+        by_day_sessions[day].add(session_id)
+
+        page_label = page_key or "—"
+        page_views[page_label] += 1
+        page_sessions[page_label].add(session_id)
+
+        ref_label = _referrer_label(referrer)
+        ref_views[ref_label] += 1
+        ref_sessions[ref_label].add(session_id)
+
+        if created_at >= start_of_today:
+            views_today += 1
+            sessions_today_set.add(session_id)
+        if created_at >= seven_days_ago:
+            views_7d += 1
+            sessions_7d_set.add(session_id)
+        views_30d += 1
+        sessions_30d_set.add(session_id)
+
+    # Continuous time series — fill missing days with zeros so the chart is gap-free.
+    daily: list[AnalyticsBucket] = []
+    first_day = start_of_today - timedelta(days=days - 1)
+    for i in range(days):
+        d = (first_day + timedelta(days=i)).date().isoformat()
+        daily.append(AnalyticsBucket(
+            label=d,
+            views=by_day_views.get(d, 0),
+            sessions=len(by_day_sessions.get(d, set())),
+        ))
+
+    def _top(views: dict[str, int], sessions: dict[str, set[str]], limit: int = 10) -> list[AnalyticsRow]:
+        items = [
+            AnalyticsRow(label=k, views=v, sessions=len(sessions.get(k, set())))
+            for k, v in views.items()
+        ]
+        items.sort(key=lambda r: r.views, reverse=True)
+        return items[:limit]
+
+    return AnalyticsSummary(
+        total_views=total_views,
+        total_sessions=total_sessions,
+        views_today=views_today,
+        sessions_today=len(sessions_today_set),
+        views_7d=views_7d,
+        sessions_7d=len(sessions_7d_set),
+        views_30d=views_30d,
+        sessions_30d=len(sessions_30d_set),
+        daily=daily,
+        top_pages=_top(page_views, page_sessions),
+        top_referrers=_top(ref_views, ref_sessions),
+    )

@@ -43,6 +43,14 @@
           Бегущая строка
         </button>
       </nav>
+
+      <p class="ed-nav__caption">Статистика</p>
+      <nav class="ed-tools" aria-label="Аналитика">
+        <button class="ed-tool" data-tool="analytics">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><path d="M7 15l4-4 3 3 5-6"/></svg>
+          Аналитика
+        </button>
+      </nav>
     </div>
 
     <div class="ed-sidebar__footer">
@@ -130,6 +138,66 @@
             <button class="btn btn--ghost" type="button" id="photoBrowse">Выбрать файлы</button>
           </div>
           <div class="photo-grid" id="photoGrid"></div>
+        </section>
+
+        <!-- ANALYTICS -->
+        <section class="tool-pane" data-pane="analytics">
+          <div class="analytics-head">
+            <p class="tool-pane__hint">Данные собираются автоматически с публичного сайта. Просмотры из админ-превью не учитываются.</p>
+            <div class="analytics-range">
+              <label for="analyticsDays">Период:</label>
+              <select id="analyticsDays" class="field__input">
+                <option value="7">7 дней</option>
+                <option value="14" selected>14 дней</option>
+                <option value="30">30 дней</option>
+                <option value="60">60 дней</option>
+                <option value="90">90 дней</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="analytics-cards">
+            <div class="analytics-card">
+              <span class="analytics-card__label">Просмотры сегодня</span>
+              <strong class="analytics-card__value" id="metricViewsToday">—</strong>
+              <span class="analytics-card__sub" id="metricSessionsTodaySub">— уникальных</span>
+            </div>
+            <div class="analytics-card">
+              <span class="analytics-card__label">За 7 дней</span>
+              <strong class="analytics-card__value" id="metricViews7">—</strong>
+              <span class="analytics-card__sub" id="metricSessions7Sub">— уникальных</span>
+            </div>
+            <div class="analytics-card">
+              <span class="analytics-card__label">За 30 дней</span>
+              <strong class="analytics-card__value" id="metricViews30">—</strong>
+              <span class="analytics-card__sub" id="metricSessions30Sub">— уникальных</span>
+            </div>
+            <div class="analytics-card">
+              <span class="analytics-card__label">Всего</span>
+              <strong class="analytics-card__value" id="metricViewsAll">—</strong>
+              <span class="analytics-card__sub" id="metricSessionsAllSub">— уникальных</span>
+            </div>
+          </div>
+
+          <div class="analytics-section">
+            <h3 class="analytics-section__title">Посещаемость по дням</h3>
+            <div class="analytics-chart" id="analyticsChart" aria-hidden="true"></div>
+            <div class="analytics-legend">
+              <span><i class="dot dot--views"></i> Просмотры</span>
+              <span><i class="dot dot--sessions"></i> Уникальные посетители</span>
+            </div>
+          </div>
+
+          <div class="analytics-grid">
+            <div class="analytics-section">
+              <h3 class="analytics-section__title">Топ страниц</h3>
+              <ul class="analytics-list" id="topPagesList"><li class="analytics-list__empty">Загрузка…</li></ul>
+            </div>
+            <div class="analytics-section">
+              <h3 class="analytics-section__title">Источники переходов</h3>
+              <ul class="analytics-list" id="topReferrersList"><li class="analytics-list__empty">Загрузка…</li></ul>
+            </div>
+          </div>
         </section>
 
         <!-- TICKER -->
