@@ -22,59 +22,188 @@ document.addEventListener('DOMContentLoaded', () => {
   countdownEl.textContent = `${days} ${pluralizeDays(days)}`;
 });
 
-// ===== CHAT WIDGET =====
-const chatWidget = document.getElementById('chatWidget');
-const chatToggle = document.getElementById('chatToggle');
-const chatInput = document.getElementById('chatInput');
-const chatSend = document.getElementById('chatSend');
-const chatMessages = document.getElementById('chatMessages');
+// ===== ФОРМА «ОСТАВИТЬ ЗАЯВКУ» =====
+// Виджет с заявкой (ФИО / телефон / почта) отправляет данные в Google-таблицу
+// через Google Apps Script Web App. После деплоя скрипта (см. google-apps-script.gs
+// и FORM-SETUP.md) вставьте сюда URL вида https://script.google.com/macros/s/.../exec
+const APPLY_ENDPOINT = 'PASTE_GOOGLE_APPS_SCRIPT_WEB_APP_URL_HERE';
 
-function openChat() {
-  if (!chatWidget) return;
-  chatWidget.classList.add('is-open');
-  chatInput.focus();
-}
+function buildApplyWidget() {
+  if (document.getElementById('applyWidget')) return;
 
-function closeChat() {
-  if (!chatWidget) return;
-  chatWidget.classList.remove('is-open');
-}
+  const wrap = document.createElement('div');
+  wrap.className = 'apply-widget';
+  wrap.id = 'applyWidget';
+  wrap.innerHTML = `
+    <button type="button" class="apply-fab" id="applyFab" aria-haspopup="dialog" aria-controls="applyModal">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M12 20h9"/><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z"/>
+      </svg>
+      <span>Оставить заявку</span>
+    </button>
 
-if (chatToggle) {
-  chatToggle.addEventListener('click', () => {
-    if (chatWidget.classList.contains('is-open')) {
-      closeChat();
-    } else {
-      openChat();
-    }
+    <div class="apply-modal" id="applyModal" role="dialog" aria-modal="true" aria-labelledby="applyModalTitle" hidden>
+      <div class="apply-modal__overlay" data-apply-close></div>
+      <div class="apply-modal__card" role="document">
+        <button type="button" class="apply-modal__close" data-apply-close aria-label="Закрыть форму">&times;</button>
+        <span class="apply-modal__eyebrow">Приёмная кампания 2026</span>
+        <h3 class="apply-modal__title" id="applyModalTitle">Оставить заявку</h3>
+        <p class="apply-modal__subtitle">Заполните форму — приёмная комиссия свяжется с вами и расскажет о поступлении.</p>
+
+        <form class="apply-form" id="applyForm" novalidate>
+          <label class="apply-field">
+            <span class="apply-field__label">ФИО <i>*</i></span>
+            <input type="text" name="name" class="apply-field__input" autocomplete="name"
+                   placeholder="Иванов Иван Иванович" required minlength="2">
+          </label>
+          <label class="apply-field">
+            <span class="apply-field__label">Телефон <i>*</i></span>
+            <input type="tel" name="phone" class="apply-field__input" autocomplete="tel"
+                   placeholder="+7 (___) ___-__-__" required
+                   pattern="[0-9+()\\-\\s]{6,20}">
+          </label>
+          <label class="apply-field">
+            <span class="apply-field__label">Электронная почта <i>*</i></span>
+            <input type="email" name="email" class="apply-field__input" autocomplete="email"
+                   placeholder="you@example.com" required>
+          </label>
+
+          <label class="apply-consent">
+            <input type="checkbox" name="consent" required>
+            <span>Я даю согласие на обработку моих персональных данных в соответствии с
+              <a href="#data-policy">политикой обработки персональных данных</a>.</span>
+          </label>
+
+          <button type="submit" class="btn btn--primary apply-form__submit" id="applySubmit">
+            Отправить заявку <span class="arrow">→</span>
+          </button>
+          <p class="apply-form__status" id="applyStatus" role="status" aria-live="polite"></p>
+        </form>
+      </div>
+    </div>`;
+
+  document.body.appendChild(wrap);
+
+  document.getElementById('applyFab').addEventListener('click', openApplyForm);
+  wrap.querySelectorAll('[data-apply-close]').forEach((el) =>
+    el.addEventListener('click', closeApplyForm));
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') closeApplyForm();
   });
+  document.getElementById('applyForm').addEventListener('submit', submitApplyForm);
 }
 
-// Send message
-function sendMessage() {
-  const text = chatInput.value.trim();
-  if (!text) return;
-
-  const userMsg = document.createElement('div');
-  userMsg.className = 'chat-widget__msg chat-widget__msg--user';
-  userMsg.textContent = text;
-  chatMessages.appendChild(userMsg);
-  chatInput.value = '';
-  chatMessages.scrollTop = chatMessages.scrollHeight;
-
-  setTimeout(() => {
-    const botMsg = document.createElement('div');
-    botMsg.className = 'chat-widget__msg chat-widget__msg--bot';
-    botMsg.textContent = 'Спасибо за вопрос! Сейчас я работаю в демо-режиме. Скоро здесь будет настоящий ИИ-ассистент. А пока напишите нам на admission@ai-faculty.ru 😊';
-    chatMessages.appendChild(botMsg);
-    chatMessages.scrollTop = chatMessages.scrollHeight;
-  }, 800);
+function openApplyForm() {
+  const modal = document.getElementById('applyModal');
+  if (!modal) return;
+  modal.hidden = false;
+  document.body.classList.add('apply-modal-open');
+  const first = modal.querySelector('input[name="name"]');
+  if (first) setTimeout(() => first.focus(), 50);
 }
 
-if (chatSend) chatSend.addEventListener('click', sendMessage);
-if (chatInput) chatInput.addEventListener('keydown', (e) => {
-  if (e.key === 'Enter') sendMessage();
+function closeApplyForm() {
+  const modal = document.getElementById('applyModal');
+  if (!modal) return;
+  modal.hidden = true;
+  document.body.classList.remove('apply-modal-open');
+}
+
+async function submitApplyForm(e) {
+  e.preventDefault();
+  const form = e.target;
+  const statusEl = document.getElementById('applyStatus');
+  const submitBtn = document.getElementById('applySubmit');
+
+  if (!form.checkValidity()) {
+    form.reportValidity();
+    return;
+  }
+
+  const payload = {
+    name: form.name.value.trim(),
+    phone: form.phone.value.trim(),
+    email: form.email.value.trim(),
+    page: window.location.pathname || '/',
+    submittedAt: new Date().toISOString(),
+  };
+
+  statusEl.className = 'apply-form__status';
+  statusEl.textContent = 'Отправляем заявку…';
+  submitBtn.disabled = true;
+
+  if (!APPLY_ENDPOINT || APPLY_ENDPOINT.indexOf('PASTE_') === 0) {
+    statusEl.className = 'apply-form__status is-error';
+    statusEl.textContent = 'Форма ещё не подключена к Google-таблице. Укажите URL в script.js (APPLY_ENDPOINT).';
+    submitBtn.disabled = false;
+    return;
+  }
+
+  try {
+    // Google Apps Script Web App не отдаёт CORS-заголовки, поэтому отправляем
+    // как text/plain в режиме no-cors: запись в таблицу проходит, ответ не читаем.
+    await fetch(APPLY_ENDPOINT, {
+      method: 'POST',
+      mode: 'no-cors',
+      headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+      body: JSON.stringify(payload),
+    });
+    form.reset();
+    statusEl.className = 'apply-form__status is-success';
+    statusEl.textContent = 'Спасибо! Ваша заявка отправлена — мы свяжемся с вами в ближайшее время.';
+  } catch (err) {
+    statusEl.className = 'apply-form__status is-error';
+    statusEl.textContent = 'Не удалось отправить заявку. Попробуйте позже или напишите на admission@ai-faculty.ru';
+  } finally {
+    submitBtn.disabled = false;
+  }
+}
+
+// ===== ПРАВОВОЕ УВЕДОМЛЕНИЕ О СБОРЕ ДАННЫХ (низ сайта) =====
+function buildDataPolicyNotice() {
+  const footer = document.querySelector('.footer .container') || document.querySelector('.footer');
+  if (!footer || document.getElementById('data-policy')) return;
+
+  const year = new Date().getFullYear();
+  const notice = document.createElement('div');
+  notice.className = 'footer__legal';
+  notice.id = 'data-policy';
+  notice.innerHTML = `
+    <h4 class="footer__legal-title">Обработка персональных данных</h4>
+    <p>
+      Отправляя заявку через формы на этом сайте, вы в соответствии с
+      Федеральным законом от 27.07.2006 № 152-ФЗ «О персональных данных»
+      даёте согласие на обработку указанных вами персональных данных
+      (фамилия, имя, отчество, номер телефона, адрес электронной почты).
+    </p>
+    <p>
+      Оператор персональных данных — Федеральное государственное автономное
+      образовательное учреждение высшего образования «Российский университет
+      дружбы народов» (РУДН), факультет искусственного интеллекта.
+      Цель обработки — обработка обращений и заявок абитуриентов, информирование
+      о поступлении, образовательных программах и мероприятиях факультета.
+    </p>
+    <p>
+      Обработка данных осуществляется с момента их получения и до достижения
+      целей обработки либо до отзыва согласия. Вы вправе в любой момент отозвать
+      согласие на обработку персональных данных, направив запрос на адрес
+      <a href="mailto:admission@ai-faculty.ru">admission@ai-faculty.ru</a>.
+      Мы не передаём ваши данные третьим лицам, кроме случаев, предусмотренных
+      законодательством Российской Федерации.
+    </p>
+    <p class="footer__legal-copy">&copy; ${year} РУДН · Факультет искусственного интеллекта · Политика обработки персональных данных</p>`;
+  footer.appendChild(notice);
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+  buildApplyWidget();
+  buildDataPolicyNotice();
 });
+
+// Обратная совместимость со старыми вызовами в разметке.
+window.openApplyForm = openApplyForm;
+window.closeApplyForm = closeApplyForm;
+window.openChat = openApplyForm;
 
 // ===== SIDEBAR NAV =====
 const burger = document.getElementById('burger');
