@@ -26,7 +26,7 @@ document.addEventListener('DOMContentLoaded', () => {
 // Виджет с заявкой (ФИО / телефон / почта) отправляет данные в Google-таблицу
 // через Google Apps Script Web App. После деплоя скрипта (см. google-apps-script.gs
 // и FORM-SETUP.md) вставьте сюда URL вида https://script.google.com/macros/s/.../exec
-const APPLY_ENDPOINT = 'PASTE_GOOGLE_APPS_SCRIPT_WEB_APP_URL_HERE';
+const APPLY_ENDPOINT = 'https://script.google.com/macros/s/AKfycbx6IQ8BhUoNFhh56ti4U8ZEqbGsUtJ8-quKq-Q8hSiIS4AJ46-poR291kHXt5Cp_Aw/exec';
 
 function buildApplyWidget() {
   if (document.getElementById('applyWidget')) return;
