@@ -91,6 +91,56 @@
   $('#logoutBtn')?.addEventListener('click', () => api.logout());
 
   // =================================================================
+  //  СМЕНА ПАРОЛЯ
+  // =================================================================
+  const pwdModal = $('#pwdModal');
+  const pwdForm = $('#pwdForm');
+  const pwdError = $('#pwdError');
+
+  function showPwdError(msg) {
+    if (!pwdError) return;
+    pwdError.textContent = msg;
+    pwdError.hidden = !msg;
+  }
+  const openPwdModal = () => {
+    showPwdError('');
+    pwdForm?.reset();
+    pwdModal.classList.add('is-open');
+    pwdModal.setAttribute('aria-hidden', 'false');
+    pwdForm?.elements['current_password']?.focus();
+  };
+  const closePwdModal = () => {
+    pwdModal.classList.remove('is-open');
+    pwdModal.setAttribute('aria-hidden', 'true');
+  };
+
+  $('#changePwdBtn')?.addEventListener('click', openPwdModal);
+  pwdModal?.addEventListener('click', (e) => { if (e.target.matches('[data-close]')) closePwdModal(); });
+
+  pwdForm?.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const fd = new FormData(pwdForm);
+    const current = fd.get('current_password');
+    const next = fd.get('new_password');
+    const confirm = fd.get('confirm_password');
+    showPwdError('');
+    if (next.length < 8) { showPwdError('Новый пароль должен быть не короче 8 символов.'); return; }
+    if (next !== confirm) { showPwdError('Пароли не совпадают.'); return; }
+    if (next === current) { showPwdError('Новый пароль совпадает с текущим.'); return; }
+    const submitBtn = pwdForm.querySelector('button[type="submit"]');
+    submitBtn.disabled = true;
+    try {
+      await api.changePassword(current, next);
+      closePwdModal();
+      showToast('Пароль изменён ✓');
+    } catch (err) {
+      showPwdError(err.message || 'Не удалось сменить пароль');
+    } finally {
+      submitBtn.disabled = false;
+    }
+  });
+
+  // =================================================================
   //  SIDEBAR — список страниц
   // =================================================================
   function renderPagesNav() {
@@ -1051,7 +1101,8 @@
   drawer?.addEventListener('click', (e) => { if (e.target.matches('[data-close]')) closeDrawer(); });
   document.addEventListener('keydown', (e) => {
     if (e.key === 'Escape') {
-      if ($('#newsModal').classList.contains('is-open')) closeNewsModal();
+      if ($('#pwdModal').classList.contains('is-open')) closePwdModal();
+      else if ($('#newsModal').classList.contains('is-open')) closeNewsModal();
       else if (drawer.classList.contains('is-open')) closeDrawer();
     }
   });

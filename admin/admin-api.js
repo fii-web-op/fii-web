@@ -66,6 +66,11 @@
   }
 
   const me      = ()       => request('/api/auth/me');
+  const changePassword = (current_password, new_password) =>
+    request('/api/auth/change-password', {
+      method: 'POST',
+      body: { current_password, new_password },
+    });
 
   // Blocks
   const listBlocks   = ()         => request('/api/admin/blocks');
@@ -125,7 +130,7 @@
 
   global.FiiAdminApi = {
     getToken, setToken, clearToken,
-    login, logout, me,
+    login, logout, me, changePassword,
     listBlocks, saveBlock, deleteTile, deleteField, resetAll,
     listDynamicBlocks, createDynamicBlock, bulkCreateDynamicBlocks, updateDynamicBlock, deleteDynamicBlock,
     listPages, createPage, deletePage,

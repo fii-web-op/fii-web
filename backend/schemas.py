@@ -30,6 +30,11 @@ class UserOut(BaseModel):
     is_active: bool
 
 
+class ChangePasswordIn(BaseModel):
+    current_password: str = Field(..., min_length=1, max_length=255)
+    new_password: str = Field(..., min_length=8, max_length=255)
+
+
 # ---------- Blocks / tiles ------------------------------------------------
 
 class BlockFieldIn(BaseModel):
