@@ -61,6 +61,9 @@
           <span class="ed-user__role">CMS · v2.0</span>
         </div>
       </div>
+      <button type="button" class="ed-logout" id="changePwdBtn" title="Сменить пароль">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+      </button>
       <button type="button" class="ed-logout" id="logoutBtn" title="Выйти">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
       </button>
@@ -251,6 +254,37 @@
             </select>
           </label>
         </div>
+        <div class="ed-form__actions">
+          <button type="button" class="btn btn--ghost" data-close>Отмена</button>
+          <button type="submit" class="btn btn--primary">Сохранить</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ===== MODAL: смена пароля ===== -->
+  <div class="modal" id="pwdModal" aria-hidden="true">
+    <div class="modal__backdrop" data-close></div>
+    <div class="modal__dialog" role="dialog" aria-modal="true" aria-labelledby="pwdModalTitle">
+      <header class="modal__head">
+        <h3 id="pwdModalTitle">Сменить пароль</h3>
+        <button class="modal__close" data-close aria-label="Закрыть">&times;</button>
+      </header>
+      <form class="ed-form" id="pwdForm">
+        <label class="field">
+          <span class="field__label">Текущий пароль</span>
+          <input type="password" class="field__input" name="current_password" autocomplete="current-password" required>
+        </label>
+        <label class="field">
+          <span class="field__label">Новый пароль</span>
+          <input type="password" class="field__input" name="new_password" autocomplete="new-password" minlength="8" required>
+          <span class="field__hint">Не короче 8 символов.</span>
+        </label>
+        <label class="field">
+          <span class="field__label">Повторите новый пароль</span>
+          <input type="password" class="field__input" name="confirm_password" autocomplete="new-password" minlength="8" required>
+        </label>
+        <p class="form__error" id="pwdError" hidden></p>
         <div class="ed-form__actions">
           <button type="button" class="btn btn--ghost" data-close>Отмена</button>
           <button type="submit" class="btn btn--primary">Сохранить</button>
