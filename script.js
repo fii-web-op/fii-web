@@ -26,7 +26,19 @@ document.addEventListener('DOMContentLoaded', () => {
 // Виджет с заявкой (ФИО / телефон / почта) отправляет данные в Google-таблицу
 // через Google Apps Script Web App. После деплоя скрипта (см. google-apps-script.gs
 // и FORM-SETUP.md) вставьте сюда URL вида https://script.google.com/macros/s/.../exec
+//
+// ВНИМАНИЕ (152-ФЗ, ч. 5 ст. 18): Google-таблица размещена за пределами РФ, поэтому
+// первичный сбор персональных данных граждан РФ напрямую в неё недопустим. Приёмник
+// заявок должен быть на российском хостинге; см. COMPLIANCE.md, раздел «Локализация».
 const APPLY_ENDPOINT = 'https://script.google.com/macros/s/AKfycbx6IQ8BhUoNFhh56ti4U8ZEqbGsUtJ8-quKq-Q8hSiIS4AJ46-poR291kHXt5Cp_Aw/exec';
+
+// Версия текста согласия. Фиксируется вместе с каждой заявкой, чтобы оператор мог
+// доказать, на какую именно редакцию согласия подписался пользователь (ст. 9 152-ФЗ).
+// При правке текста согласия — здесь и в consent.html — увеличивайте номер.
+const CONSENT_VERSION = '1.0';
+const CONSENT_TEXT = 'Я даю согласие на обработку моих персональных данных (ФИО, телефон, '
+  + 'адрес электронной почты) на условиях, указанных в документе «Согласие на обработку '
+  + 'персональных данных», и ознакомлен(а) с Политикой в отношении обработки персональных данных.';
 
 function buildApplyWidget() {
   if (document.getElementById('applyWidget')) return;
@@ -68,10 +80,24 @@ function buildApplyWidget() {
                    placeholder="you@example.com" required>
           </label>
 
+          <!-- Отметки НЕ проставлены заранее: ст. 9 152-ФЗ требует конкретного,
+               информированного и сознательного действия пользователя. Атрибут
+               checked здесь добавлять нельзя. -->
           <label class="apply-consent">
             <input type="checkbox" name="consent" required>
-            <span>Я даю согласие на обработку моих персональных данных в соответствии с
-              <a href="#data-policy">политикой обработки персональных данных</a>.</span>
+            <span>Я даю согласие на обработку моих персональных данных (ФИО, телефон,
+              адрес электронной почты) на условиях
+              <a href="/consent.html" target="_blank" rel="noopener">Согласия на обработку
+              персональных данных</a> и ознакомлен(а) с
+              <a href="/privacy.html" target="_blank" rel="noopener">Политикой в отношении
+              обработки персональных данных</a>. <i>*</i></span>
+          </label>
+
+          <label class="apply-consent apply-consent--optional">
+            <input type="checkbox" name="marketing">
+            <span>Согласен(на) получать информационные сообщения о днях открытых дверей,
+              мероприятиях и новостях факультета. Необязательно — на рассмотрение заявки
+              не влияет, отзывается отдельно.</span>
           </label>
 
           <button type="submit" class="btn btn--primary apply-form__submit" id="applySubmit">
@@ -120,12 +146,27 @@ async function submitApplyForm(e) {
     return;
   }
 
+  // Страховка на случай, если required у чекбокса будет снят при правке разметки:
+  // без согласия обработка персональных данных неправомерна, заявку не отправляем.
+  if (!form.consent.checked) {
+    statusEl.className = 'apply-form__status is-error';
+    statusEl.textContent = 'Без согласия на обработку персональных данных мы не вправе принять заявку.';
+    form.consent.focus();
+    return;
+  }
+
   const payload = {
     name: form.name.value.trim(),
     phone: form.phone.value.trim(),
     email: form.email.value.trim(),
     page: window.location.pathname || '/',
     submittedAt: new Date().toISOString(),
+    // Подтверждение согласия — оператор обязан доказать его наличие (ч. 1 ст. 9 152-ФЗ).
+    consent: true,
+    consentVersion: CONSENT_VERSION,
+    consentText: CONSENT_TEXT,
+    consentAt: new Date().toISOString(),
+    marketingConsent: form.marketing.checked,
   };
 
   statusEl.className = 'apply-form__status';
@@ -171,34 +212,152 @@ function buildDataPolicyNotice() {
   notice.innerHTML = `
     <h4 class="footer__legal-title">Обработка персональных данных</h4>
     <p>
-      Отправляя заявку через формы на этом сайте, вы в соответствии с
-      Федеральным законом от 27.07.2006 № 152-ФЗ «О персональных данных»
-      даёте согласие на обработку указанных вами персональных данных
-      (фамилия, имя, отчество, номер телефона, адрес электронной почты).
-    </p>
-    <p>
       Оператор персональных данных — Федеральное государственное автономное
       образовательное учреждение высшего образования «Российский университет
       дружбы народов» (РУДН), факультет искусственного интеллекта.
-      Цель обработки — обработка обращений и заявок абитуриентов, информирование
-      о поступлении, образовательных программах и мероприятиях факультета.
+      Цель обработки — рассмотрение обращений и заявок абитуриентов и
+      консультирование по вопросам поступления.
     </p>
     <p>
-      Обработка данных осуществляется с момента их получения и до достижения
-      целей обработки либо до отзыва согласия. Вы вправе в любой момент отозвать
-      согласие на обработку персональных данных, направив запрос на адрес
+      Персональные данные (ФИО, телефон, адрес электронной почты) обрабатываются
+      на основании согласия, которое вы даёте отдельной отметкой при отправке формы,
+      в соответствии с Федеральным законом от 27.07.2006 № 152-ФЗ «О персональных
+      данных». Полные условия — в
+      <a href="/privacy.html">Политике в отношении обработки персональных данных</a>
+      и в тексте
+      <a href="/consent.html">Согласия на обработку персональных данных</a>.
+    </p>
+    <p>
+      Вы вправе в любой момент отозвать согласие, направив запрос на адрес
       <a href="mailto:admission@ai-faculty.ru">admission@ai-faculty.ru</a>.
       Мы не передаём ваши данные третьим лицам, кроме случаев, предусмотренных
-      законодательством Российской Федерации.
+      законодательством Российской Федерации, и не осуществляем трансграничную передачу.
+      О файлах cookie и статистике посещений — в разделе
+      <a href="/privacy.html#cookies">Cookie и аналитика</a>;
+      <button type="button" class="footer__legal-link" data-cookie-settings>изменить настройки аналитики</button>.
     </p>
-    <p class="footer__legal-copy">&copy; ${year} РУДН · Факультет искусственного интеллекта · Политика обработки персональных данных</p>`;
+    <p class="footer__legal-copy">&copy; ${year} РУДН · Факультет искусственного интеллекта</p>`;
   footer.appendChild(notice);
 }
 
 document.addEventListener('DOMContentLoaded', () => {
   buildApplyWidget();
   buildDataPolicyNotice();
+  initPrivacyConsent();
 });
+
+// ===== СОГЛАСИЕ НА COOKIE / АНАЛИТИКУ =====
+// Сайт сохраняет идентификатор сессии и отправляет оператору сведения о просмотре
+// страницы. Это данные пользователя, поэтому до получения согласия аналитика не
+// запускается вовсе — баннер не декоративный, он реально управляет сбором.
+// Выбор пользователя хранится в localStorage: это технически необходимая запись,
+// без неё невозможно исполнить сам отказ.
+const CONSENT_STORAGE_KEY = 'fii_privacy_consent';
+const CONSENT_POLICY_VERSION = '1.0';
+// Через год спрашиваем заново — согласие не может быть бессрочным.
+const CONSENT_TTL_MS = 365 * 24 * 60 * 60 * 1000;
+
+function readPrivacyConsent() {
+  try {
+    const raw = JSON.parse(localStorage.getItem(CONSENT_STORAGE_KEY));
+    if (!raw || typeof raw !== 'object') return null;
+    if (raw.version !== CONSENT_POLICY_VERSION) return null;
+    if (!raw.ts || Date.now() - raw.ts > CONSENT_TTL_MS) return null;
+    return raw;
+  } catch (e) {
+    return null;
+  }
+}
+
+function savePrivacyConsent(analyticsAllowed) {
+  const record = {
+    analytics: analyticsAllowed === true,
+    version: CONSENT_POLICY_VERSION,
+    ts: Date.now(),
+  };
+  try { localStorage.setItem(CONSENT_STORAGE_KEY, JSON.stringify(record)); } catch (e) { /* noop */ }
+  return record;
+}
+
+function isAnalyticsAllowed() {
+  const stored = readPrivacyConsent();
+  return !!(stored && stored.analytics);
+}
+
+function buildCookieBanner() {
+  if (document.getElementById('cookieBanner')) return;
+
+  const banner = document.createElement('div');
+  banner.className = 'cookie-banner';
+  banner.id = 'cookieBanner';
+  banner.setAttribute('role', 'dialog');
+  banner.setAttribute('aria-live', 'polite');
+  banner.setAttribute('aria-label', 'Уведомление об использовании cookie и статистики');
+  banner.innerHTML = `
+    <div class="cookie-banner__text">
+      <strong class="cookie-banner__title">Cookie и статистика посещений</strong>
+      <p>
+        Для работы сайта мы используем только технически необходимые данные. С вашего
+        согласия мы дополнительно собираем обезличенную статистику посещений: случайный
+        идентификатор сессии, адрес страницы и источник перехода.
+        IP-адрес и сведения о браузере не сохраняются. Подробности — в
+        <a href="/privacy.html#cookies">разделе о cookie</a> и
+        <a href="/privacy.html">Политике обработки персональных данных</a>.
+      </p>
+    </div>
+    <div class="cookie-banner__actions">
+      <button type="button" class="btn btn--outline btn--sm" data-cookie-decline>Только необходимые</button>
+      <button type="button" class="btn btn--primary btn--sm" data-cookie-accept>Принять</button>
+    </div>`;
+
+  document.body.appendChild(banner);
+
+  banner.querySelector('[data-cookie-accept]').addEventListener('click', () => {
+    savePrivacyConsent(true);
+    hideCookieBanner();
+    trackPageView();
+  });
+  banner.querySelector('[data-cookie-decline]').addEventListener('click', () => {
+    savePrivacyConsent(false);
+    hideCookieBanner();
+    // Идентификатор мог остаться от прошлого визита — убираем при отказе.
+    try { sessionStorage.removeItem('fii_sid'); } catch (e) { /* noop */ }
+  });
+
+  requestAnimationFrame(() => banner.classList.add('is-visible'));
+}
+
+function hideCookieBanner() {
+  const banner = document.getElementById('cookieBanner');
+  if (!banner) return;
+  banner.classList.remove('is-visible');
+  setTimeout(() => banner.remove(), 300);
+}
+
+function openCookieSettings() {
+  hideCookieBanner();
+  buildCookieBanner();
+}
+
+function initPrivacyConsent() {
+  // В админ-превью баннер только мешает — там аналитика и так отключена.
+  if (window.__FII_PREVIEW__ === true) return;
+
+  if (readPrivacyConsent() === null) {
+    buildCookieBanner();
+  } else if (isAnalyticsAllowed()) {
+    trackPageView();
+  }
+
+  document.querySelectorAll('[data-cookie-settings]').forEach((el) => {
+    el.addEventListener('click', (e) => {
+      e.preventDefault();
+      openCookieSettings();
+    });
+  });
+}
+
+window.openCookieSettings = openCookieSettings;
 
 // Обратная совместимость со старыми вызовами в разметке.
 window.openApplyForm = openApplyForm;
@@ -683,8 +842,15 @@ document.querySelectorAll('.cards, .cards--programs, .reviews__grid').forEach((g
 // Pings /api/public/track once per page load. Session id lives in
 // sessionStorage so views from the same tab count as a single visitor; clearing
 // the tab or browser starts a new one. Admin previews are skipped.
-(function trackPageView() {
+//
+// Вызывается только из initPrivacyConsent() и только после согласия пользователя
+// (152-ФЗ). Автозапуска здесь быть не должно.
+let __fiiTracked = false;
+function trackPageView() {
   if (window.__FII_PREVIEW__ === true) return;
+  if (__fiiTracked) return;
+  if (!isAnalyticsAllowed()) return;
+  __fiiTracked = true;
   const metaEl = document.querySelector('meta[name="fii-api-base"]');
   const apiBase = (window.FII_API_BASE || (metaEl && metaEl.content) || '').replace(/\/$/, '');
   if (!apiBase) return;
@@ -715,7 +881,7 @@ document.querySelectorAll('.cards, .cards--programs, .reviews__grid').forEach((g
       }),
     }).catch(() => { /* best-effort */ });
   } catch (e) { /* noop */ }
-})();
+}
 
 // ===== CAROUSEL NAVIGATION =====
 (function initCarousels() {

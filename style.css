@@ -1879,6 +1879,9 @@ body.apply-modal-open { overflow: hidden; }
     gap: 48px;
   }
 
+  /* Колонка «Документы» уходит на вторую строку сетки, под контакты. */
+  .footer__col--legal { grid-column: 2 / -1; }
+
   .apply { padding: 128px 0; }
 
   .stub-page { padding: 144px 0; }
@@ -1933,9 +1936,11 @@ body.apply-modal-open { overflow: hidden; }
   }
 
   .footer__inner {
-    grid-template-columns: 2.4fr 1fr 1fr;
+    grid-template-columns: 2.4fr 1fr 1fr 1.4fr;
     gap: 56px;
   }
+
+  .footer__col--legal { grid-column: auto; }
 
   .apply__inner {
     grid-template-columns: 1.3fr 1fr;
@@ -2157,4 +2162,252 @@ body.apply-modal-open { overflow: hidden; }
     transition-duration: 0.01ms !important;
     scroll-behavior: auto !important;
   }
+}
+
+/* =====================================================================
+   ПРАВОВОЙ БЛОК: ссылки в футере, баннер cookie, страницы документов
+   (152-ФЗ — политика, согласие, уведомление об аналитике)
+   ===================================================================== */
+
+.footer__col--legal p { margin-top: 8px; }
+.footer__col--legal a {
+  color: var(--muted);
+  text-decoration: none;
+  border-bottom: 1px solid var(--rule);
+  transition: color var(--t-fast), border-color var(--t-fast);
+}
+.footer__col--legal a:hover {
+  color: var(--ink);
+  border-bottom-color: var(--accent);
+}
+
+/* Кнопка «изменить настройки аналитики» внутри текста — выглядит как ссылка. */
+.footer__legal-link {
+  background: none;
+  border: none;
+  padding: 0;
+  font: inherit;
+  color: var(--ink);
+  text-decoration: underline;
+  cursor: pointer;
+}
+.footer__legal-link:hover { color: var(--accent); }
+
+.apply-consent--optional {
+  padding-top: 2px;
+  border-top: 1px dashed var(--rule);
+  margin-top: 2px;
+  color: var(--muted-2);
+}
+
+/* ===== COOKIE / ANALYTICS BANNER ===== */
+.cookie-banner {
+  position: fixed;
+  left: var(--gutter);
+  right: var(--gutter);
+  bottom: var(--gutter);
+  z-index: 900;
+  display: grid;
+  gap: 16px;
+  max-width: 720px;
+  margin: 0 auto;
+  padding: 20px;
+  background: var(--surface);
+  border: 1px solid var(--rule);
+  border-radius: var(--radius);
+  box-shadow: 0 18px 48px rgba(2, 17, 26, 0.55);
+  font-family: var(--font-sans);
+  opacity: 0;
+  transform: translateY(16px);
+  transition: opacity var(--t), transform var(--t);
+}
+.cookie-banner.is-visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+.cookie-banner__title {
+  display: block;
+  font-size: 13px;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--ink);
+  margin-bottom: 8px;
+}
+.cookie-banner__text p {
+  font-size: 13px;
+  line-height: 1.6;
+  color: var(--muted);
+}
+.cookie-banner__text a {
+  color: var(--ink);
+  text-decoration: underline;
+}
+.cookie-banner__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+.cookie-banner__actions .btn { flex: 1 1 auto; justify-content: center; }
+
+@media (min-width: 768px) {
+  /* Прижимаем баннер влево: справа снизу висит кнопка «Оставить заявку»,
+     перекрывать её нельзя. */
+  .cookie-banner {
+    right: auto;
+    margin: 0;
+    max-width: 640px;
+    padding: 24px 28px;
+  }
+  .cookie-banner__actions { flex-wrap: nowrap; }
+}
+
+@media (min-width: 1200px) {
+  .cookie-banner {
+    grid-template-columns: 1fr auto;
+    align-items: center;
+    gap: 28px;
+    max-width: 900px;
+  }
+  .cookie-banner__actions .btn { flex: 0 0 auto; }
+}
+
+/* ===== СТРАНИЦЫ ДОКУМЕНТОВ (privacy.html, consent.html) ===== */
+.legal { padding: 96px 0 80px; }
+.legal__inner { max-width: 880px; }
+.legal .section__title { margin-bottom: 16px; }
+.legal .section__subtitle { margin-bottom: 24px; }
+
+.legal__meta {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  line-height: 1.7;
+  color: var(--muted-2);
+  padding-bottom: 24px;
+  border-bottom: 1px solid var(--rule);
+}
+.legal__version { color: var(--accent); }
+
+/* Незаполненные реквизиты оператора — заметны и в вёрстке, и при вычитке. */
+.legal-fill {
+  display: inline;
+  padding: 1px 6px;
+  border-radius: var(--radius-sm);
+  background: rgba(224, 148, 20, 0.16);
+  border: 1px dashed rgba(224, 148, 20, 0.55);
+  color: #e6b866;
+  font-family: var(--font-mono);
+  font-size: 0.92em;
+}
+
+.legal__toc {
+  margin: 32px 0 8px;
+  padding: 24px 28px;
+  background: var(--surface);
+  border: 1px solid var(--rule);
+  border-radius: var(--radius);
+}
+.legal__toc-title {
+  font-family: var(--font-sans);
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--muted-2);
+  margin-bottom: 16px;
+}
+.legal__toc ol {
+  margin: 0;
+  padding-left: 20px;
+  color: var(--muted-2);
+}
+.legal__toc li { margin-bottom: 8px; font-size: 14px; }
+.legal__toc a {
+  color: var(--muted);
+  text-decoration: none;
+  border-bottom: 1px solid transparent;
+}
+.legal__toc a:hover { color: var(--ink); border-bottom-color: var(--accent); }
+
+.legal__section {
+  padding-top: 40px;
+  scroll-margin-top: calc(var(--header-h) + 24px);
+}
+.legal__section h2 {
+  font-family: var(--font-serif);
+  font-size: clamp(19px, 2.4vw, 24px);
+  line-height: 1.3;
+  color: var(--ink);
+  margin-bottom: 16px;
+}
+.legal__section p,
+.legal__section li {
+  font-family: var(--font-sans);
+  font-size: 15px;
+  line-height: 1.75;
+  color: var(--ink-soft);
+}
+.legal__section p { margin-bottom: 14px; }
+.legal__section ul,
+.legal__section ol {
+  margin: 0 0 18px;
+  padding-left: 22px;
+}
+.legal__section li { margin-bottom: 10px; }
+.legal__section a { color: var(--accent); text-decoration: underline; }
+.legal__section code {
+  font-family: var(--font-mono);
+  font-size: 0.9em;
+  color: var(--ink);
+  background: var(--surface-soft);
+  padding: 1px 6px;
+  border-radius: var(--radius-sm);
+}
+
+.legal__table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 8px 0 20px;
+  font-family: var(--font-sans);
+  font-size: 14px;
+  line-height: 1.6;
+  color: var(--ink-soft);
+}
+.legal__table th,
+.legal__table td {
+  padding: 12px 14px;
+  border: 1px solid var(--rule);
+  text-align: left;
+  vertical-align: top;
+}
+.legal__table thead th {
+  background: var(--surface);
+  color: var(--ink);
+  font-size: 12px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+.legal__table tbody th {
+  width: 34%;
+  color: var(--muted);
+  font-weight: 500;
+}
+
+.legal__quote {
+  margin: 8px 0 20px;
+  padding: 20px 24px;
+  background: var(--surface);
+  border-left: 2px solid var(--accent);
+  border-radius: 0 var(--radius) var(--radius) 0;
+  font-family: var(--font-sans);
+  font-size: 15px;
+  line-height: 1.75;
+  color: var(--ink);
+}
+
+.legal__actions { margin-top: 20px; }
+
+@media (max-width: 640px) {
+  /* Таблицы политики шире экрана телефона — прокручиваем их, а не страницу. */
+  .legal__table { display: block; overflow-x: auto; white-space: nowrap; }
+  .legal__table td, .legal__table th { white-space: normal; min-width: 180px; }
 }

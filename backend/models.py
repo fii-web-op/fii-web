@@ -143,6 +143,9 @@ class PageView(Base):
     path:       Mapped[str] = mapped_column(String(500), nullable=False)
     referrer:   Mapped[str | None] = mapped_column(String(500), nullable=True)
     session_id: Mapped[str] = mapped_column(String(64), nullable=False, index=True)
+    # Устаревшее поле: больше не заполняется (минимизация данных, ч. 5 ст. 5 152-ФЗ).
+    # Колонка оставлена, чтобы не ломать существующую БД. Исторические значения
+    # нужно один раз обнулить: UPDATE page_views SET user_agent = NULL;
     user_agent: Mapped[str | None] = mapped_column(String(500), nullable=True)
     created_at: Mapped[datetime] = mapped_column(
         DateTime, server_default=func.now(), nullable=False, index=True,

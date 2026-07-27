@@ -2,12 +2,14 @@
 
 from __future__ import annotations
 
+from datetime import datetime, timedelta, timezone
 from typing import Annotated
 
-from fastapi import APIRouter, Depends, Header, Request, Response, status
-from sqlalchemy import select
+from fastapi import APIRouter, Depends, Request, Response, status
+from sqlalchemy import delete, select
 from sqlalchemy.orm import Session
 
+from ..config import get_settings
 from ..database import get_db
 from ..models import BlockField, DynamicBlock, News, Page, PageView, Photo, TickerItem, TileVisibility
 from ..schemas import DynamicBlockOut, NewsOut, PageOut, PageViewIn, PhotoOut, PublicOverridesOut
@@ -71,19 +73,49 @@ def track_view(
     payload: PageViewIn,
     request: Request,
     db: Annotated[Session, Depends(get_db)],
-    user_agent: Annotated[str | None, Header(alias="user-agent")] = None,
 ) -> Response:
-    """Log one public page view. Called by script.js on every page load.
+    """Log one public page view. Called by script.js — только после того, как
+    пользователь согласился на аналитику (см. initPrivacyConsent в script.js).
 
-    No auth — anyone can record their own visit. We don't store IPs (privacy);
-    the client-generated session id alone backs the "unique visitors" metric.
+    No auth — anyone can record their own visit. Минимизация данных (ч. 5 ст. 5
+    152-ФЗ): IP-адрес не сохраняем, User-Agent не сохраняем (в статистике он не
+    используется). Для метрики уникальных посетителей достаточно созданного на
+    клиенте идентификатора сессии.
     """
     db.add(PageView(
         page_key=payload.page_key,
         path=payload.path[:500],
         referrer=(payload.referrer or None) and payload.referrer[:500],
         session_id=payload.session_id[:64],
-        user_agent=user_agent[:500] if user_agent else None,
     ))
     db.commit()
+    _purge_expired_views(db)
     return Response(status_code=status.HTTP_204_NO_CONTENT)
+
+
+# Чистку запускаем не чаще раза в час — она попутная, отдельный планировщик
+# ради неё разворачивать не нужно.
+_last_purge_at: datetime | None = None
+_PURGE_INTERVAL = timedelta(hours=1)
+
+
+def _purge_expired_views(db: Session) -> None:
+    """Удаляет просмотры старше срока хранения (ч. 7 ст. 5 152-ФЗ)."""
+    global _last_purge_at
+
+    now = datetime.now(timezone.utc)
+    if _last_purge_at is not None and now - _last_purge_at < _PURGE_INTERVAL:
+        return
+    _last_purge_at = now
+
+    retention_days = get_settings().ANALYTICS_RETENTION_DAYS
+    if retention_days <= 0:
+        return
+
+    cutoff = now.replace(tzinfo=None) - timedelta(days=retention_days)
+    try:
+        db.execute(delete(PageView).where(PageView.created_at < cutoff))
+        db.commit()
+    except Exception:
+        # Просмотр уже записан — сбой уборки не должен ломать ответ пользователю.
+        db.rollback()

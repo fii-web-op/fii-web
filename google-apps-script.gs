@@ -11,6 +11,13 @@
  *        - У кого есть доступ: «Все».
  *   4. Скопируйте URL вида https://script.google.com/macros/s/.../exec
  *      и вставьте его в script.js → const APPLY_ENDPOINT.
+ *
+ * ВНИМАНИЕ (152-ФЗ). Серверы Google находятся за пределами Российской Федерации,
+ * поэтому приём персональных данных граждан РФ напрямую в Google-таблицу нарушает
+ * требование о локализации баз данных (ч. 5 ст. 18 152-ФЗ) и является трансграничной
+ * передачей без уведомления Роскомнадзора (ст. 12 152-ФЗ). Этот скрипт оставлен как
+ * временное решение и дополнен фиксацией согласия; постоянный приёмник заявок должен
+ * быть развёрнут на российском хостинге. Подробности и план миграции — в COMPLIANCE.md.
  */
 
 var SPREADSHEET_ID = '1QXnXXSfA2s-pzLg37R-YbUTCI_k_MCKq4uEmfpCCvVg';
@@ -19,6 +26,13 @@ var SHEET_NAME = 'Заявки';
 function doPost(e) {
   try {
     var data = JSON.parse(e.postData.contents);
+
+    // Без согласия обработка персональных данных неправомерна (ч. 1 ст. 6 152-ФЗ):
+    // такие заявки не записываем вообще, даже если запрос дошёл в обход формы.
+    if (data.consent !== true) {
+      return jsonOutput_({ result: 'error', message: 'consent required' });
+    }
+
     var sheet = getSheet_();
     sheet.appendRow([
       new Date(),
@@ -26,6 +40,11 @@ function doPost(e) {
       data.phone || '',
       data.email || '',
       data.page || '',
+      'Да',
+      data.consentAt || '',
+      data.consentVersion || '',
+      data.marketingConsent === true ? 'Да' : 'Нет',
+      data.consentText || '',
     ]);
     return jsonOutput_({ result: 'ok' });
   } catch (err) {
@@ -42,7 +61,11 @@ function getSheet_() {
   var sheet = ss.getSheetByName(SHEET_NAME);
   if (!sheet) {
     sheet = ss.insertSheet(SHEET_NAME);
-    sheet.appendRow(['Дата', 'ФИО', 'Телефон', 'Email', 'Страница']);
+    sheet.appendRow([
+      'Дата', 'ФИО', 'Телефон', 'Email', 'Страница',
+      'Согласие на обработку ПДн', 'Дата согласия', 'Версия согласия',
+      'Согласие на рассылку', 'Текст согласия',
+    ]);
   }
   return sheet;
 }

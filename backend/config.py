@@ -63,6 +63,12 @@ class Settings:
         return path
 
     MAX_UPLOAD_BYTES: int = int(os.getenv("MAX_UPLOAD_BYTES", str(8 * 1024 * 1024)))  # 8 MB
+
+    # Analytics retention — сколько дней хранятся записи о просмотрах страниц.
+    # Хранение не может быть бессрочным: данные удаляются по достижении цели
+    # обработки (ч. 7 ст. 5 152-ФЗ). Срок должен совпадать с указанным в
+    # privacy.html, раздел «Cookie, аналитика и иные автоматически собираемые данные».
+    ANALYTICS_RETENTION_DAYS: int = int(os.getenv("ANALYTICS_RETENTION_DAYS", "365"))
     ALLOWED_IMAGE_EXTS: set[str] = {".png", ".jpg", ".jpeg", ".webp", ".gif", ".svg"}
 
     # Static admin SPA served by FastAPI on the admin host.
