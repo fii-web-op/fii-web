@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="fii-api-base" content="https://web-production-8cf0f.up.railway.app">
+  <meta name="description" content="Текст согласия на обработку персональных данных, которое даёт пользователь при отправке формы на сайте факультета искусственного интеллекта РУДН.">
+  <title>Согласие на обработку персональных данных — Факультет искусственного интеллекта РУДН</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;600;700;800&family=Space+Grotesk:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <link rel="icon" type="image/svg+xml" href="assets/favicon.svg">
+  <link rel="apple-touch-icon" href="assets/favicon.svg">
+  <link rel="mask-icon" href="assets/favicon.svg" color="#14E0B1">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body data-page="consent">
+
+  <header class="header" id="header" data-tile="site-header">
+    <div class="container header__inner">
+      <a href="index.html" class="header__logo" aria-label="Факультет ИИ РУДН — на главную">
+        <img src="assets/rudn-logo.svg" alt="" class="header__logo-mark" aria-hidden="true">
+        <span class="header__logo-text">Факультет ИИ</span>
+        <span class="header__logo-subtitle">РУДН</span>
+      </a>
+
+      <nav class="header__nav" aria-label="Основная навигация">
+        <ul class="header__nav-list">
+          <li><a href="about.html" class="header__nav-link">О факультете</a></li>
+          <li><a href="achievements.html" class="header__nav-link">Достижения</a></li>
+          <li><a href="reviews.html" class="header__nav-link">Отзывы</a></li>
+          <li><a href="admission.html" class="header__nav-link">Поступление</a></li>
+        </ul>
+      </nav>
+
+      <div class="header__socials" aria-label="Соцсети">
+        <a href="#" class="header__social" aria-label="Telegram">TG</a>
+        <a href="#" class="header__social" aria-label="VKontakte">VK</a>
+        <a href="#" class="header__social" aria-label="YouTube">YT</a>
+      </div>
+
+      <button class="btn btn--outline btn--sm header__cta" onclick="openApplyForm()">Оставить заявку</button>
+
+      <button class="header__burger" id="burger" aria-label="Открыть меню" aria-expanded="false" aria-controls="sidebar">
+        <span></span><span></span><span></span>
+      </button>
+    </div>
+  </header>
+
+  <div class="sidebar-overlay" id="sidebarOverlay"></div>
+  <nav class="sidebar" id="sidebar" aria-label="Мобильное меню">
+    <button class="sidebar__close" id="sidebarClose" aria-label="Закрыть меню">&times;</button>
+    <ul class="sidebar__menu">
+      <li><a href="about.html" class="sidebar__link">О факультете</a></li>
+      <li><a href="achievements.html" class="sidebar__link">Достижения</a></li>
+      <li><a href="reviews.html" class="sidebar__link">Отзывы</a></li>
+      <li><a href="admission.html" class="sidebar__link">Поступление</a></li>
+    </ul>
+    <button class="btn btn--primary sidebar__cta" onclick="closeSidebar(); openApplyForm();">Оставить заявку</button>
+    <div class="sidebar__socials" aria-label="Соцсети">
+      <a href="#" class="sidebar__social">Telegram</a>
+      <a href="#" class="sidebar__social">VK</a>
+      <a href="#" class="sidebar__social">YouTube</a>
+    </div>
+  </nav>
+
+  <!--
+    ВНИМАНИЕ ПЕРЕД ПУБЛИКАЦИЕЙ.
+    Фрагменты с классом "legal-fill" ([ ... ]) — плейсхолдеры, их нужно заменить
+    реальными реквизитами оператора. Полный список — в COMPLIANCE.md.
+    Текст согласия ниже должен совпадать с тем, что подтверждает пользователь в
+    форме (script.js, константа CONSENT_TEXT) — при правке меняйте оба места и
+    увеличивайте номер версии CONSENT_VERSION.
+  -->
+  <main class="section legal">
+    <div class="container legal__inner">
+
+      <span class="section__eyebrow">Форма согласия</span>
+      <h1 class="section__title">Согласие на обработку персональных данных.</h1>
+      <p class="section__subtitle">
+        Ниже приведён полный текст согласия, которое даёт пользователь, проставляя отметку
+        в форме «Оставить заявку» на этом сайте. Согласие оформлено в соответствии со
+        статьёй 9 Федерального закона от 27.07.2006 № 152-ФЗ «О персональных данных».
+      </p>
+
+      <p class="legal__meta">
+        Версия текста согласия: <span class="legal__version" id="consentVersion">1.0</span> ·
+        Действует с <span class="legal-fill">[дата]</span>
+      </p>
+
+      <section class="legal__section" id="c1">
+        <h2>1. Кому даётся согласие</h2>
+        <p>
+          Согласие даётся оператору персональных данных —
+          <span class="legal-fill">[полное наименование организации]</span>,
+          ОГРН <span class="legal-fill">[ОГРН]</span>, ИНН <span class="legal-fill">[ИНН]</span>,
+          адрес: <span class="legal-fill">[юридический адрес]</span> (далее — Оператор),
+          в лице структурного подразделения «Факультет искусственного интеллекта».
+        </p>
+      </section>
+
+      <section class="legal__section" id="c2">
+        <h2>2. Как выражается согласие</h2>
+        <p>
+          Согласие даётся свободно, своей волей и в своём интересе путём проставления отметки
+          в поле «Я даю согласие на обработку персональных данных» в форме на сайте и нажатия
+          кнопки отправки формы. Отметка не проставлена заранее — пользователь проставляет её
+          самостоятельно. Без проставленной отметки форма не отправляется.
+        </p>
+        <p>
+          Оператор фиксирует дату и время предоставления согласия, страницу сайта, с которой
+          отправлена форма, и версию текста согласия, действовавшую на момент его предоставления.
+        </p>
+      </section>
+
+      <section class="legal__section" id="c3">
+        <h2>3. Перечень персональных данных, на обработку которых даётся согласие</h2>
+        <ul>
+          <li>фамилия, имя, отчество;</li>
+          <li>номер контактного телефона;</li>
+          <li>адрес электронной почты;</li>
+          <li>сведения, добровольно сообщённые в тексте обращения.</li>
+        </ul>
+        <p>
+          Специальные категории персональных данных и биометрические персональные данные через
+          формы сайта не собираются, и настоящее согласие на их обработку не распространяется.
+        </p>
+      </section>
+
+      <section class="legal__section" id="c4">
+        <h2>4. Цели обработки</h2>
+        <ul>
+          <li>рассмотрение обращения и связь с пользователем по существу обращения;</li>
+          <li>консультирование по вопросам поступления, образовательным программам, вступительным испытаниям и условиям обучения;</li>
+          <li>сопровождение абитуриента в рамках приёмной кампании.</li>
+        </ul>
+        <p>
+          Информирование о мероприятиях, днях открытых дверей, новостях и иных материалах
+          рекламно-информационного характера осуществляется <strong>только</strong> при наличии
+          отдельного согласия, которое даётся отдельной отметкой в форме и может быть отозвано
+          независимо от настоящего согласия.
+        </p>
+      </section>
+
+      <section class="legal__section" id="c5">
+        <h2>5. Перечень действий и способы обработки</h2>
+        <p>
+          Согласие даётся на совершение следующих действий с персональными данными: сбор,
+          запись, систематизация, накопление, хранение, уточнение (обновление, изменение),
+          извлечение, использование, блокирование, удаление, уничтожение.
+        </p>
+        <p>
+          Обработка осуществляется смешанным способом — с использованием средств автоматизации
+          и без их использования, без передачи персональных данных по внутренней сети Оператора
+          неограниченному кругу лиц и без размещения их в открытом доступе. Трансграничная
+          передача персональных данных не осуществляется.
+        </p>
+        <p>
+          Персональные данные не распространяются неограниченному кругу лиц. Настоящее согласие
+          не является согласием на распространение персональных данных в смысле статьи 10.1
+          Закона № 152-ФЗ.
+        </p>
+      </section>
+
+      <section class="legal__section" id="c6">
+        <h2>6. Срок действия согласия</h2>
+        <p>
+          Согласие действует до достижения целей обработки, но не более
+          <span class="legal-fill">[срок, например 1 года]</span> с даты его предоставления,
+          если раньше не будет отозвано пользователем.
+        </p>
+        <p>
+          По достижении целей обработки либо при отзыве согласия персональные данные
+          уничтожаются в срок, не превышающий тридцати дней, за исключением случаев, когда
+          Оператор вправе продолжить обработку по иному правовому основанию, предусмотренному
+          законодательством Российской Федерации.
+        </p>
+      </section>
+
+      <section class="legal__section" id="c7">
+        <h2>7. Порядок отзыва согласия</h2>
+        <p>
+          Согласие может быть отозвано в любой момент путём направления обращения в свободной
+          форме на адрес электронной почты
+          <a href="mailto:admission@ai-faculty.ru">admission@ai-faculty.ru</a>
+          либо в письменном виде по адресу
+          <span class="legal-fill">[почтовый адрес для обращений]</span>.
+        </p>
+        <p>
+          В обращении следует указать фамилию, имя, отчество и сведения, позволяющие
+          идентифицировать обратившегося, — например, адрес электронной почты или номер
+          телефона, указанные при отправке формы. Ответ на обращение направляется в срок,
+          не превышающий тридцати дней с даты его получения.
+        </p>
+      </section>
+
+      <section class="legal__section" id="c8">
+        <h2>8. Подтверждение пользователя</h2>
+        <blockquote class="legal__quote" id="consentText">
+          Я подтверждаю, что указанные мной персональные данные принадлежат мне, являются
+          достоверными, и даю согласие Оператору на их обработку в объёме, целях, способами и
+          на срок, указанные в настоящем документе. Я ознакомлен(а) с
+          <a href="privacy.html">Политикой в отношении обработки персональных данных</a>
+          и с правом отозвать согласие в порядке, предусмотренном разделом 7.
+        </blockquote>
+        <p class="legal__actions">
+          <button type="button" class="btn btn--primary btn--sm" onclick="openApplyForm()">
+            Перейти к форме заявки <span class="arrow">→</span>
+          </button>
+        </p>
+      </section>
+
+    </div>
+  </main>
+
+  <footer class="footer" data-tile="site-footer">
+    <div class="container footer__inner">
+      <div class="footer__col">
+        <div class="footer__brand">
+          <span class="header__logo-text">Факультет ИИ</span>
+        </div>
+        <p class="footer__university">Факультет искусственного интеллекта Российского университета дружбы народов</p>
+        <p class="footer__copy">&copy; 2026 РУДН · Все права защищены</p>
+      </div>
+      <div class="footer__col">
+        <h4 class="footer__heading">Приёмная комиссия</h4>
+        <p>+7 (495) 123-45-67</p>
+        <p>admission@ai-faculty.ru</p>
+        <p>Пн – Пт · 09:00 – 18:00</p>
+      </div>
+      <div class="footer__col">
+        <h4 class="footer__heading">Адрес</h4>
+        <p>Москва, ул. Примерная, 1</p>
+        <p>Корпус «Нейрон», 3 этаж</p>
+      </div>
+      <div class="footer__col footer__col--legal">
+        <h4 class="footer__heading">Документы</h4>
+        <p><a href="privacy.html">Политика обработки персональных данных</a></p>
+        <p><a href="consent.html">Согласие на обработку персональных данных</a></p>
+        <p><a href="privacy.html#cookies">Cookie и аналитика</a></p>
+      </div>
+    </div>
+  </footer>
+
+  <script src="tile-registry.js"></script>
+  <script src="background-effects.js"></script>
+  <script src="script.js"></script>
+</body>
+</html>
