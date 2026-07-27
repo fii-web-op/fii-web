@@ -40,6 +40,15 @@ const CONSENT_TEXT = 'Я даю согласие на обработку мои�
   + 'адрес электронной почты) на условиях, указанных в документе «Согласие на обработку '
   + 'персональных данных», и ознакомлен(а) с Политикой в отношении обработки персональных данных.';
 
+// Путь к правовым документам. Сайт публикуется из двух мест: GitHub Pages отдаёт
+// его из подкаталога (/fii-web/...), а FastAPI — из корня, включая страницы
+// вида /p/{key}. Обычным страницам нужен относительный путь (иначе на Pages
+// получится 404), страницам /p/ — корневой (иначе выйдет /p/privacy.html).
+// Документы обязаны открываться отовсюду — ч. 2 ст. 18.1 152-ФЗ.
+function legalUrl(file) {
+  return location.pathname.indexOf('/p/') === 0 ? '/' + file : file;
+}
+
 function buildApplyWidget() {
   if (document.getElementById('applyWidget')) return;
 
@@ -87,9 +96,9 @@ function buildApplyWidget() {
             <input type="checkbox" name="consent" required>
             <span>Я даю согласие на обработку моих персональных данных (ФИО, телефон,
               адрес электронной почты) на условиях
-              <a href="/consent.html" target="_blank" rel="noopener">Согласия на обработку
+              <a href="${legalUrl('consent.html')}" target="_blank" rel="noopener">Согласия на обработку
               персональных данных</a> и ознакомлен(а) с
-              <a href="/privacy.html" target="_blank" rel="noopener">Политикой в отношении
+              <a href="${legalUrl('privacy.html')}" target="_blank" rel="noopener">Политикой в отношении
               обработки персональных данных</a>. <i>*</i></span>
           </label>
 
@@ -223,9 +232,9 @@ function buildDataPolicyNotice() {
       на основании согласия, которое вы даёте отдельной отметкой при отправке формы,
       в соответствии с Федеральным законом от 27.07.2006 № 152-ФЗ «О персональных
       данных». Полные условия — в
-      <a href="/privacy.html">Политике в отношении обработки персональных данных</a>
+      <a href="${legalUrl('privacy.html')}">Политике в отношении обработки персональных данных</a>
       и в тексте
-      <a href="/consent.html">Согласия на обработку персональных данных</a>.
+      <a href="${legalUrl('consent.html')}">Согласия на обработку персональных данных</a>.
     </p>
     <p>
       Вы вправе в любой момент отозвать согласие, направив запрос на адрес
@@ -233,7 +242,7 @@ function buildDataPolicyNotice() {
       Мы не передаём ваши данные третьим лицам, кроме случаев, предусмотренных
       законодательством Российской Федерации, и не осуществляем трансграничную передачу.
       О файлах cookie и статистике посещений — в разделе
-      <a href="/privacy.html#cookies">Cookie и аналитика</a>;
+      <a href="${legalUrl('privacy.html')}#cookies">Cookie и аналитика</a>;
       <button type="button" class="footer__legal-link" data-cookie-settings>изменить настройки аналитики</button>.
     </p>
     <p class="footer__legal-copy">&copy; ${year} РУДН · Факультет искусственного интеллекта</p>`;
@@ -301,8 +310,8 @@ function buildCookieBanner() {
         согласия мы дополнительно собираем обезличенную статистику посещений: случайный
         идентификатор сессии, адрес страницы и источник перехода.
         IP-адрес и сведения о браузере не сохраняются. Подробности — в
-        <a href="/privacy.html#cookies">разделе о cookie</a> и
-        <a href="/privacy.html">Политике обработки персональных данных</a>.
+        <a href="${legalUrl('privacy.html')}#cookies">разделе о cookie</a> и
+        <a href="${legalUrl('privacy.html')}">Политике обработки персональных данных</a>.
       </p>
     </div>
     <div class="cookie-banner__actions">
